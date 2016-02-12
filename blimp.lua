@@ -1,0 +1,121 @@
+blimp = class()
+
+BULLET_FORCE = 100
+JOYSTICK_CUTOFF = 0.5
+function blimp:init(x,y,joystick,angle,color)
+	print("blimp made: " .. x .. " " .. y)
+	self.pos = vec2(x,y)
+	self.joystick = joystick
+	self.cannon = angle
+	self.bulletReset = false
+	self.radius = 7
+	self.hitTimer = 0
+	self.charge = 0
+	self.mainColor = color
+end
+
+function blimp:update(dt)
+	self.hitTimer = self.hitTimer - dt
+	if self.hitTimer < 0 then self.joystick:setVibration(0,0) end
+	if self.dead then return true end
+	local anglevec = vec2(self.joystick:getAxis(4),-self.joystick:getAxis(5))
+	local angle = vec2(0,0):angleTo(anglevec)
+	if angle > math.pi/2 then angle = -math.pi
+	elseif angle > 0 then angle = 0 end
+	if anglevec:len() > 0.4 then self.cannon = angle end
+
+	self.pos.y = self.pos.y + 25*dt
+
+	-- if self.joystick:getAxis(2) > JOYSTICK_CUTOFF then
+	-- 	self.pos.y = self.pos.y + dt*50
+	-- end
+
+	if self.joystick:getAxis(2) < - JOYSTICK_CUTOFF then
+		self.pos.y = self.pos.y - dt*66
+	end
+	if self.joystick:getAxis(1) < - JOYSTICK_CUTOFF then
+		self.pos.x = self.pos.x - dt*50 * (1.0 - self.charge*0.5)
+	end
+	if self.joystick:getAxis(1) > JOYSTICK_CUTOFF then
+		self.pos.x = self.pos.x + dt*50 * (1.0 - self.charge*0.5)
+	end
+	self.pos.x = math.min(192,math.max(0,self.pos.x))
+	self.pos.y = math.min(108,math.max(0,self.pos.y))
+	-- if self.joystick:getAxis(6) < JOYSTICK_CUTOFF then
+	-- 	if self.bulletReset == true then
+	-- 		self.bulletReset = false
+	-- 	end
+	-- end
+	if    self.joystick:getAxis(6) > JOYSTICK_CUTOFF
+	   -- or self.joystick:getAxis(6) < -JOYSTICK_CUTOFF
+	   or self.joystick:isDown(5,6) then
+	   -- print("charging")
+	   self.charge = math.min(1.2,self.charge + dt)
+	else
+		if self.charge > 0.25 then
+			local pos = self.pos + vec2(9,0):rotated(self.cannon)
+			local b = bullet:new(pos,vec2(self.charge*BULLET_FORCE*math.cos(self.cannon),self.charge*BULLET_FORCE*math.sin(self.cannon)))
+			table.insert(bullets,b)
+		end
+		self.charge = 0
+	end
+	--    and not self.bulletReset then
+	-- -- if self.joystick:getAxis(6) > JOYSTICK_CUTOFF then
+	-- 	self.bulletReset = true
+	-- 	local b = bullet:new(self.pos,vec2(BULLET_FORCE*math.cos(self.cannon),BULLET_FORCE*math.sin(self.cannon)))
+	-- 	table.insert(bullets,b)
+	-- end
+end
+
+function blimp:draw()
+	if self.dead then return end
+	-- love.graphics.circle("line", self.pos.x, self.pos.y, 7)
+	love.graphics.setColor(255,255,255)
+	love.graphics.draw(cannonImage, self.pos.x, self.pos.y, self.cannon,1,1,1,1)
+	love.graphics.setColor(BLIMP_COLOR_SUB)
+	love.graphics.rectangle("fill",self.pos.x-2, self.pos.y, 4, 3)
+	love.graphics.rectangle("fill",self.pos.x-1, self.pos.y, 2, 4)
+	love.graphics.push()
+	local blimpXloc = (self.pos.x/192-0.5)*2
+	local blimpYloc = (self.pos.y/108-0.5)*2
+	love.graphics.scale(1, 0.6)
+	-- love.graphics.setColor(BLIMP_COLOR_MAIN[1]+SUN_COLOR[1]/4,BLIMP_COLOR_MAIN[2]+SUN_COLOR[2]/4,BLIMP_COLOR_MAIN[3]+SUN_COLOR[3]/4)
+	love.graphics.setColor(self.mainColor[1]+40,self.mainColor[2]+50,self.mainColor[3]+5)
+	love.graphics.circle("fill", self.pos.x,(self.pos.y-2)/0.6, 7)
+	love.graphics.setColor(self.mainColor)
+	love.graphics.circle("fill", self.pos.x+blimpXloc,(self.pos.y-2+blimpYloc)/0.6, 7)
+	love.graphics.pop()
+	love.graphics.setColor(255, 255, 255)
+end
+function blimp:hit(bullet,dt)
+	self.joystick:setVibration(0.5,0.5)
+	self.pos = self.pos + 4*bullet.vel*dt
+	-- local pieces = math.random(2,5)
+	-- for i = 1,pieces do
+	-- 	local rotate = math.random(-30,30)/180*math.pi
+	-- 	local v = (bullet.vel):rotated(rotate)/2
+	-- 	local c = bullet:new(bullet.pos,v,true)
+	-- 	table.insert(bullets,c)
+	-- end
+	self.hitTimer = 1
+	self.dead = true
+	local deadvec = {3,5,6,7,7,6,5,3,2,2,1}
+	for i = 1,#deadvec do
+		for j = 1,deadvec[i] do
+			local color = (i > 8 and BLIMP_COLOR_SUB or self.mainColor)
+			local y = self.pos.y-8+i
+			local x = self.pos.x-(j-1)
+			local x2 = self.pos.x+j-1
+
+			local rotate = math.random(-30,30)/180*math.pi
+			local v = (bullet.vel):rotated(rotate)/2
+			local c = bullet:new(vec2(x,y),v,true,color)
+
+			local rotate = math.random(-30,30)/180*math.pi
+			local v = (bullet.vel):rotated(rotate)/2
+			local d = bullet:new(vec2(x2,y),v,true,color)
+			table.insert(bullets,c)
+			table.insert(bullets,d)
+		end
+	end
+end
