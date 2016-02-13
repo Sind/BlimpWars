@@ -14,8 +14,8 @@ BLIMP_COLORS = {
 	{85, 29, 0},
 	{105, 22, 0},
 	{95, 0, 33},
-	{141,63,7},
-	{141,94,7}
+	{141, 63, 7},
+	{141, 94, 7}
 }
 function love.load()
 	if jit ~= nil then
@@ -48,7 +48,7 @@ function love.load()
 	local cannonImageData = love.image.newImageData(10, 2)
 	for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
 	cannonImage = love.graphics.newImage(cannonImageData)
-	
+
 	joysticks = love.joystick.getJoysticks()
 	players = {}
 	print()
@@ -57,15 +57,18 @@ function love.load()
 		local pos = lin*(192-50)
 		local angle = -lin*math.pi/2 - math.pi/4
 		local p = blimp:new(25+pos,50,joysticks[i],angle,BLIMP_COLORS[i])
-	-- players = {blimp:new(50,50,joysticks[1],-math.pi/4), blimp:new(192-50,50,joysticks[2],-3*math.pi/4)}
+		-- players = {blimp:new(50,50,joysticks[1],-math.pi/4), blimp:new(192-50,50,joysticks[2],-3*math.pi/4)}
 		table.insert(players,p)
 	end
 	accumulator = 0
 	bullets = {}
 	keypressed = {}
 	sunTimer = 0
-	sunDistortVector = {}
-	for i = 1,108 do sunDistortVector[i] = 0 end
+	sunDistortVector = love.image.newImageData(108, 1)
+	sunDistortVectorImg = love.graphics.newImage(sunDistortVector)
+	for x = 0,107 do
+		sunDistortVector:setPixel(x, 0, 127, 0, 0, 0)
+	end
 	circleCanvasOnce = false
 end
 
@@ -73,14 +76,17 @@ framecount = 0
 function love.update(dt)
 	framecount = framecount + 1
 	if framecount % 300 == 0 then
-	   print("FPS: " .. tostring(love.timer.getFPS()))
+		print("FPS: " .. tostring(love.timer.getFPS()))
 	end
 	accumulator = accumulator + dt
 	screenshake:update(dt)
 	sunTimer = sunTimer - dt
-	-- for i = 81,108 do sunDistortVector[i] = math.sin(sunTimer+i/10)*i/40 end
+
 	if sunTimer < 0 then
-		for i = 81,108 do sunDistortVector[i] = math.random(-1,1) end
+		for x = 80,107 do
+			local value = math.random(0, 255)
+			sunDistortVector:setPixel(x, 0, value, 0, 0, 0)
+		end
 		sunTimer = sunTimer + 0.1
 	end
 	while accumulator > FRAME_SPEED do
@@ -94,7 +100,7 @@ function love.update(dt)
 				if b:update(FRAME_SPEED) then table.remove(bullets,i) end
 			end
 		end
-		tock("updating all bullets", 1)
+		tock("updating all bullets", 2)
 		keypressed = {}
 	end
 end
@@ -131,16 +137,16 @@ function love.draw()
 	love.graphics.setCanvas(canvas)
 	love.graphics.clear()
 	love.graphics.setColor(255, 255, 255)
-	-- print(#sunDistortVector)
-	--distortShader:send('distortVec',unpack(sunDistortVector))
+	sunDistortVectorImg:refresh()
+	distortShader:send('distortVec', sunDistortVectorImg)
 	love.graphics.setColor(WHITE)
-	--love.graphics.setShader(distortShader)
+	love.graphics.setShader(distortShader)
 	love.graphics.draw(backgroundCanvas)
-	--love.graphics.setShader()
+	love.graphics.setShader()
 
 	for i,v in ipairs(bullets) do v:draw() end
 	for i,v in ipairs(players) do v:draw() end
-	
+
 	love.graphics.setCanvas()
 	screenshake:start()
 	love.graphics.draw(canvas, 0, 0, 0, 10, 10)
@@ -162,11 +168,10 @@ function isColliding(a,b)
 	return a.radius + b.radius > dist
 end
 
---[[distortShader = love.graphics.newShader([[
-	uniform number distortVec[108];
-	vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
-	{
-		number distort = distortVec[int(texture_coords.y*108)]/108;
-		return vec4(vec3(Texel(texture,vec2(distort+texture_coords.x,texture_coords.y))),1.0);
+distortShader = love.graphics.newShader([[
+	extern Image distortVec;
+	vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+		number distort = (Texel(distortVec, vec2(texture_coords.y, 0.0)).r - 0.5)/45.0;
+		return vec4(vec3(Texel(texture,vec2(distort+texture_coords.x, texture_coords.y))), 1.0);
 	}
-]]--
+]])
