@@ -172,6 +172,6 @@ distortShader = love.graphics.newShader([[
 	extern Image distortVec;
 	vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
 		number distort = (Texel(distortVec, vec2(texture_coords.y, 0.0)).r - 0.5)/45.0;
-		return vec4(vec3(Texel(texture,vec2(distort+texture_coords.x, texture_coords.y))), 1.0);
+		return vec4(Texel(texture, vec2(texture_coords.x + distort, texture_coords.y)).rgb, 1.0);
 	}
 ]])
