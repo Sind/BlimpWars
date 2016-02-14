@@ -12,6 +12,9 @@ function blimp:init(x,y,joystick,angle,color)
 	self.hitTimer = 0
 	self.charge = 0
 	self.mainColor = color
+	local cannonImageData = love.image.newImageData(10, 2)
+	for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
+	blimp.cannonImage = love.graphics.newImage(cannonImageData)
 end
 
 function blimp:update(dt)

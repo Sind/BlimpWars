@@ -1,23 +1,23 @@
-positionmanager = {}
+playermanager = {}
 tween = require "tween"
 
-positionmanager.ongoingTweens = {}
+playermanager.ongoingTweens = {}
 
-positionmanager.homePositions = nil;
-positionmanager.statePositions = nil;
-positionmanager.players = nil;
+playermanager.homePositions = nil;
+playermanager.statePositions = nil;
+playermanager.players = nil;
 
-function positionmanager.initializePositions(windowWidth, windowHeight)
+function playermanager.initializePositions(windowWidth, windowHeight)
    local maxWidth = windowWidth*0.8
    local widthOffset = (windowWidth - maxWidth)/2.0
    local bottomOffset = windowHeight - windowHeight*0.05
-   positionmanager.homePositions = {
+   playermanager.homePositions = {
       {widthOffset, bottomOffset},
       {widthOffset + maxWidth/3, bottomOffset},
       {widthOffset + 2*maxWidth/3, bottomOffset},
       {windowWidth - widthOffset, bottomOffset}
    }
-   positionmanager.players = {
+   playermanager.players = {
       {
 	 pos = {widthOffset, bottomOffset},
 	 active = false
@@ -40,7 +40,7 @@ function positionmanager.initializePositions(windowWidth, windowHeight)
    local rX = windowHeight*0.6
    local rY = windowHeight*0.4
    local circle = function(radians) return {cX + rX*math.cos(radians), (cY*0.5 - 1.5*rY*math.sin(radians))} end
-   positionmanager.statePositions = {
+   playermanager.statePositions = {
       {{windowWidth/2, windowHeight/2 - rY}},
       {{cX + rX*math.cos(math.pi), (cY - 1.5*rY*math.sin(math.pi))}, {cX + rX*math.cos(0), cY - rY*math.sin(0)}},
       {circle(0), circle(-math.pi/2), circle(2*math.pi/2)},
@@ -48,41 +48,41 @@ function positionmanager.initializePositions(windowWidth, windowHeight)
    }
 end
 
-function positionmanager.wantsJoin(player)
-   if positionmanager.players[player].active then print("player " .. tostring(player) .. " already joined."); return end
-   positionmanager.players[player].active = true
+function playermanager.wantsJoin(player)
+   if playermanager.players[player].active then print("player " .. tostring(player) .. " already joined."); return end
+   playermanager.players[player].active = true
 
-   positionmanager._movePlayersToAssignedPositions()
+   playermanager._movePlayersToAssignedPositions()
 end
 
-function positionmanager.wantsLeave(player)
-   if not positionmanager.players[player].active then print("player " .. tostring(player) .. " already inactive."); return end
-   positionmanager.players[player].active = false
+function playermanager.wantsLeave(player)
+   if not playermanager.players[player].active then print("player " .. tostring(player) .. " already inactive."); return end
+   playermanager.players[player].active = false
    
    -- move the player that left to its home-position
-   positionmanager.new(0.5, positionmanager.players[player].pos, positionmanager.homePositions[player], "outCirc")
+   playermanager.new(0.5, playermanager.players[player].pos, playermanager.homePositions[player], "outCirc")
 
    -- reshuffle the rest of the players accordingly
-   positionmanager._movePlayersToAssignedPositions()
+   playermanager._movePlayersToAssignedPositions()
 end
 
-function positionmanager._movePlayersToAssignedPositions()
+function playermanager._movePlayersToAssignedPositions()
    local numActives = 0
    local activePositions = {}
-   for i, v in ipairs(positionmanager.players) do
+   for i, v in ipairs(playermanager.players) do
       if v.active then
 	 numActives = numActives + 1
 	 table.insert(activePositions, v.pos)
       end
    end
    if numActives == 0 then return end
-   local possiblePositions = positionmanager.statePositions[numActives]
-   local best = positionmanager.findBestAssignment(activePositions, possiblePositions)
+   local possiblePositions = playermanager.statePositions[numActives]
+   local best = playermanager.findBestAssignment(activePositions, possiblePositions)
 
    local lookupNthActivePlayer = function(n)
       local seen = 0
-      for i = 1,#positionmanager.players do
-	 if positionmanager.players[i].active then
+      for i = 1,#playermanager.players do
+	 if playermanager.players[i].active then
 	    seen = seen + 1
 	 end
 	 if seen == n then return i end
@@ -90,32 +90,32 @@ function positionmanager._movePlayersToAssignedPositions()
    end
    for i, v in ipairs(best) do
       local playerId = lookupNthActivePlayer(i)
-      positionmanager.new(0.5, positionmanager.players[playerId].pos, possiblePositions[best[i]], "outCirc")
+      playermanager.new(0.5, playermanager.players[playerId].pos, possiblePositions[best[i]], "outCirc")
    end
 end
 
-function positionmanager.new(duration, subject, target, easing)
+function playermanager.new(duration, subject, target, easing)
    -- check if a given subject already has any ongoing tweens, and if so, delete them.
-   for i = #positionmanager.ongoingTweens, 1, -1 do
-      if positionmanager.ongoingTweens[i].subject == subject then
-	 table.remove(positionmanager.ongoingTweens, i)
+   for i = #playermanager.ongoingTweens, 1, -1 do
+      if playermanager.ongoingTweens[i].subject == subject then
+	 table.remove(playermanager.ongoingTweens, i)
       end
    end
    local t = tween.new(duration, subject, target, easing)
-   table.insert(positionmanager.ongoingTweens, t)
+   table.insert(playermanager.ongoingTweens, t)
    return t
 end
 
-function positionmanager.update(dt)
-   for i = #positionmanager.ongoingTweens, 1, -1 do
-      local done = positionmanager.ongoingTweens[i]:update(dt)
+function playermanager.update(dt)
+   for i = #playermanager.ongoingTweens, 1, -1 do
+      local done = playermanager.ongoingTweens[i]:update(dt)
       if done then
-	 table.remove(positionmanager.ongoingTweens, i)
+	 table.remove(playermanager.ongoingTweens, i)
       end
    end
 end
 
-function positionmanager._perms(a)
+function playermanager._perms(a)
    local permutations = {}
    local b = a
    if a==0 then return end
@@ -148,7 +148,7 @@ function positionmanager._perms(a)
    return permutations
 end
 
-function positionmanager.findBestAssignment(currentObjectPositions, slotPositions)
+function playermanager.findBestAssignment(currentObjectPositions, slotPositions)
    local dist = function(a, b) return math.sqrt((a[1] - b[1])^2 + (a[2] - b[2])^2) end
    local scoreAssignment = function(assignment)
       local acc = 0
@@ -157,7 +157,7 @@ function positionmanager.findBestAssignment(currentObjectPositions, slotPosition
       end
       return acc
    end
-   local allPermutations = positionmanager._perms(#slotPositions)
+   local allPermutations = playermanager._perms(#slotPositions)
 
    local bestScoreSoFar = 1/0
    local bestAssignmentSoFar = nil
@@ -170,4 +170,4 @@ function positionmanager.findBestAssignment(currentObjectPositions, slotPosition
    end
    return bestAssignmentSoFar, bestScoreSoFar
 end
-return positionmanager
+return playermanager

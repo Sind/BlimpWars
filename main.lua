@@ -10,7 +10,7 @@ function love.load()
 			print("JIT is disabled...")
 		end
 	end
-	love.mouse.setVisible(false)
+	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
 	love.graphics.setDefaultFilter("nearest","nearest")
 	love.window.setMode(1920,1080, {fullscreen = true})
 
@@ -22,16 +22,16 @@ function love.load()
 	require "class"
 	require "blimp"
 	require "bullet"
-	require "positionmanager"
+	require "playermanager"
 	background = require "background"
 	screenshake = require "screenshake"
 	require "colorscheme"
-	positionmanager.initializePositions(192, 108)
+	playermanager.initializePositions(192, 108)
 
 	-- assert(#joysticks >= 2,"not enough joysticks")
-	local cannonImageData = love.image.newImageData(10, 2)
-	for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
-	cannonImage = love.graphics.newImage(cannonImageData)
+	--local cannonImageData = love.image.newImageData(10, 2)
+	--for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
+	--cannonImage = love.graphics.newImage(cannonImageData)
 
 	joysticks = love.joystick.getJoysticks()
 	players = {}
@@ -77,7 +77,7 @@ function love.update(dt)
 		tock("updating all bullets", 2)
 		keypressed = {}
 	end
-	positionmanager.update(dt)
+	playermanager.update(dt)
 	background.update(dt)
 end
 
@@ -91,7 +91,7 @@ function love.draw()
 	for i,v in ipairs(bullets) do v:draw() end
 	for i,v in ipairs(players) do v:draw() end
 
-	for k, v in pairs(positionmanager.players) do
+	for k, v in pairs(playermanager.players) do
 		if v.active then
 			drawFakeBlimp(v.pos[1], v.pos[2], true)
 		else
@@ -113,9 +113,9 @@ function love.keypressed(key)
 	if key == "6" then love.load() end
 	if key == "1" or key == "2" or key == "3" or key == "4" then
 		if love.keyboard.isDown("lshift") then
-			positionmanager.wantsLeave(tonumber(key))
+			playermanager.wantsLeave(tonumber(key))
 		else
-			positionmanager.wantsJoin(tonumber(key))
+			playermanager.wantsJoin(tonumber(key))
 		end
 	end
 end
@@ -147,7 +147,7 @@ function drawFakeBlimp(x, y, active)
 	local dimFactor = 1.0
 	if not active then dimFactor = 0.5 end
 	love.graphics.setColor(255,255,255)
-	love.graphics.draw(cannonImage, x, y, math.pi, 1, 1, 1, 1)
+	--love.graphics.draw(blimp.cannonImage, x, y, math.pi, 1, 1, 1, 1)
 	love.graphics.setColor(colors.BLIMP_COLOR_SUB[1]*dimFactor, colors.BLIMP_COLOR_SUB[2]*dimFactor, colors.BLIMP_COLOR_SUB[2]*dimFactor)
 	love.graphics.rectangle("fill", x-2, y, 4, 3)
 	love.graphics.rectangle("fill", x-1, y, 2, 4)
