@@ -1,51 +1,54 @@
 playermanager = {}
 tween = require "tween"
+require "util"
+require "blimp"
+require "colorscheme"
+require "player"
 
 playermanager.ongoingTweens = {}
 
+-- the home positions each blimp starts out with and will return to when deactivated.
 playermanager.homePositions = nil;
+-- list of possible starting positions for 1, 2, 3 and 4 players.
 playermanager.statePositions = nil;
+-- player data
 playermanager.players = nil;
 
-function playermanager.initializePositions(windowWidth, windowHeight)
+function playermanager.initializePositions(windowWidth, windowHeight, joysticks)
    local maxWidth = windowWidth*0.8
    local widthOffset = (windowWidth - maxWidth)/2.0
    local bottomOffset = windowHeight - windowHeight*0.05
    playermanager.homePositions = {
-      {widthOffset, bottomOffset},
-      {widthOffset + maxWidth/3, bottomOffset},
-      {widthOffset + 2*maxWidth/3, bottomOffset},
-      {windowWidth - widthOffset, bottomOffset}
+      vec2(widthOffset, bottomOffset),
+      vec2(widthOffset + maxWidth/3, bottomOffset),
+      vec2(widthOffset + 2*maxWidth/3, bottomOffset),
+      vec2(windowWidth - widthOffset, bottomOffset)
    }
-   playermanager.players = {
-      {
-	 pos = {widthOffset, bottomOffset},
-	 active = false
-      },
-      {
-	 pos = {widthOffset + maxWidth/3, bottomOffset},
-	 active = false
-      },
-      {
-	 pos = {widthOffset + 2*maxWidth/3, bottomOffset},
-	 active = false
-      },
-      {
-	 pos = {windowWidth - widthOffset, bottomOffset},
-	 active = false
-      }
-   }
+   playermanager.players = {}
+   
+   -- we always generate a full set of four players at the bottom, even if fewer gamepads are connected.
+   for i = 1, 4 do
+      playermanager.players[i] = player:new(playermanager.homePositions[i]:clone(), joysticks[i], math.pi, colors.BLIMP_COLORS[i])
+      playermanager.active = false
+   end
+
    local cX = windowWidth/2
    local cY = windowHeight/2
    local rX = windowHeight*0.6
    local rY = windowHeight*0.4
-   local circle = function(radians) return {cX + rX*math.cos(radians), (cY*0.5 - 1.5*rY*math.sin(radians))} end
+   local circle = function(radians) return vec2(cX + rX*math.cos(radians), (cY*0.5 - 1.5*rY*math.sin(radians))) end
    playermanager.statePositions = {
-      {{windowWidth/2, windowHeight/2 - rY}},
-      {{cX + rX*math.cos(math.pi), (cY - 1.5*rY*math.sin(math.pi))}, {cX + rX*math.cos(0), cY - rY*math.sin(0)}},
+      {vec2(windowWidth/2, windowHeight/2 - rY)},
+      {vec2(cX + rX*math.cos(math.pi), cY - 1.5*rY*math.sin(math.pi)), vec2(cX + rX*math.cos(0), cY - rY*math.sin(0))},
       {circle(0), circle(-math.pi/2), circle(2*math.pi/2)},
-      {{cX + rX, cY + rY}, {cX - rX, cY + rY}, {cX - rX, cY - rY}, {cX + rX, cY - rY}}
+      {vec2(cX + rX, cY + rY), vec2(cX - rX, cY + rY), vec2(cX - rX, cY - rY), vec2(cX + rX, cY - rY)}
    }
+end
+
+function playermanager.drawPlayers()
+   for k, v in ipairs(playermanager.players) do
+      v:draw()
+   end
 end
 
 function playermanager.wantsJoin(player)
@@ -60,7 +63,7 @@ function playermanager.wantsLeave(player)
    playermanager.players[player].active = false
    
    -- move the player that left to its home-position
-   playermanager.new(0.5, playermanager.players[player].pos, playermanager.homePositions[player], "outCirc")
+   playermanager._move(0.5, playermanager.players[player].pos, playermanager.homePositions[player]:clone(), "outCirc")
 
    -- reshuffle the rest of the players accordingly
    playermanager._movePlayersToAssignedPositions()
@@ -90,11 +93,11 @@ function playermanager._movePlayersToAssignedPositions()
    end
    for i, v in ipairs(best) do
       local playerId = lookupNthActivePlayer(i)
-      playermanager.new(0.5, playermanager.players[playerId].pos, possiblePositions[best[i]], "outCirc")
+      playermanager._move(0.5, playermanager.players[playerId].pos, possiblePositions[best[i]], "outCirc")
    end
 end
 
-function playermanager.new(duration, subject, target, easing)
+function playermanager._move(duration, subject, target, easing)
    -- check if a given subject already has any ongoing tweens, and if so, delete them.
    for i = #playermanager.ongoingTweens, 1, -1 do
       if playermanager.ongoingTweens[i].subject == subject then
@@ -115,41 +118,8 @@ function playermanager.update(dt)
    end
 end
 
-function playermanager._perms(a)
-   local permutations = {}
-   local b = a
-   if a==0 then return end
-   local taken = {} local slots = {}
-   for i=1,a do slots[i]=0 end
-   for i=1,b do taken[i]=false end
-   local index = 1
-   while index > 0 do repeat
-	 repeat slots[index] = slots[index] + 1
-	 until slots[index] > b or not taken[slots[index]]
-	 if slots[index] > b then
-            slots[index] = 0
-            index = index - 1
-            if index > 0 then
-	       taken[slots[index]] = false
-            end
-            break
-	 else
-            taken[slots[index]] = true
-	 end
-	 if index == a then
-	    local newPermutation = {}
-	    for i=1,a do newPermutation[i] = slots[i] end
-	    table.insert(permutations, newPermutation)
-            taken[slots[index]] = false
-            break
-	 end
-	 index = index + 1
-   until true end
-   return permutations
-end
-
 function playermanager.findBestAssignment(currentObjectPositions, slotPositions)
-   local dist = function(a, b) return math.sqrt((a[1] - b[1])^2 + (a[2] - b[2])^2) end
+   local dist = function(a, b) return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2) end -- TODO: does vec already do this for us?
    local scoreAssignment = function(assignment)
       local acc = 0
       for i = 1,#slotPositions do
@@ -157,7 +127,7 @@ function playermanager.findBestAssignment(currentObjectPositions, slotPositions)
       end
       return acc
    end
-   local allPermutations = playermanager._perms(#slotPositions)
+   local allPermutations = util.enumeratePermutationVectors(#slotPositions)
 
    local bestScoreSoFar = 1/0
    local bestAssignmentSoFar = nil
@@ -170,4 +140,5 @@ function playermanager.findBestAssignment(currentObjectPositions, slotPositions)
    end
    return bestAssignmentSoFar, bestScoreSoFar
 end
+
 return playermanager
