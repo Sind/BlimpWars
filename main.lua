@@ -1,22 +1,5 @@
 FRAME_SPEED = 1/60
 
-WHITE = {255,255,255,255}
-BLACK = {0,0,0}
-BACKGROUND_COLOR = {82, 12, 4}
-SUN_COLOR = {254, 150, 15}
-WATER_COLOR = {0, 5, 50, 50}
-BLIMP_COLOR_MAIN = {128, 0, 0}
-BLIMP_COLOR_SUB = {128, 128, 128}
-BULLET_COLOR = {255,255,255}
-
-BLIMP_COLORS = {
-	{128, 0, 0},
-	{85, 29, 0},
-	{105, 22, 0},
-	{95, 0, 33},
-	{141, 63, 7},
-	{141, 94, 7}
-}
 function love.load()
 	if jit ~= nil then
 		print("Running under luajit...")
@@ -29,21 +12,22 @@ function love.load()
 	end
 	love.mouse.setVisible(false)
 	love.graphics.setDefaultFilter("nearest","nearest")
-	love.window.setMode(1920,1080,{fullscreen = true})
-	-- love.graphics.setBackgroundColor(WHITE)
+	love.window.setMode(1920,1080, {fullscreen = true})
 
 	canvas = love.graphics.newCanvas(192, 108)
-	backgroundCanvas = love.graphics.newCanvas(192,108)
-	circleCanvas = love.graphics.newCanvas(192,80)
-	vignetteCanvas = love.graphics.newCanvas(192,108)
 
 	canvas:setWrap("clamp","clamp")
-	backgroundCanvas:setWrap("clamp","clamp")
+
 	vec2 = require "vector"
 	require "class"
 	require "blimp"
 	require "bullet"
+	require "positionmanager"
+	background = require "background"
 	screenshake = require "screenshake"
+	require "colorscheme"
+	positionmanager.initializePositions(192, 108)
+
 	-- assert(#joysticks >= 2,"not enough joysticks")
 	local cannonImageData = love.image.newImageData(10, 2)
 	for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
@@ -63,32 +47,22 @@ function love.load()
 	accumulator = 0
 	bullets = {}
 	keypressed = {}
-	sunTimer = 0
-	sunDistortVector = love.image.newImageData(108, 1)
-	sunDistortVectorImg = love.graphics.newImage(sunDistortVector)
-	for x = 0,107 do
-		sunDistortVector:setPixel(x, 0, 127, 0, 0, 0)
-	end
-	circleCanvasOnce = false
+
+	logo = love.graphics.newImage("blimpwars-logo.png")
+	background.load(192, 108)
 end
 
 framecount = 0
+simulationtime = 0
 function love.update(dt)
 	framecount = framecount + 1
 	if framecount % 300 == 0 then
 		print("FPS: " .. tostring(love.timer.getFPS()))
 	end
+	simulationtime = simulationtime + dt
 	accumulator = accumulator + dt
 	screenshake:update(dt)
-	sunTimer = sunTimer - dt
 
-	if sunTimer < 0 then
-		for x = 80,107 do
-			local value = math.random(0, 255)
-			sunDistortVector:setPixel(x, 0, value, 0, 0, 0)
-		end
-		sunTimer = sunTimer + 0.1
-	end
 	while accumulator > FRAME_SPEED do
 		accumulator = accumulator - FRAME_SPEED
 		for i,v in ipairs(players) do v:update(FRAME_SPEED) end
@@ -103,60 +77,47 @@ function love.update(dt)
 		tock("updating all bullets", 2)
 		keypressed = {}
 	end
+	positionmanager.update(dt)
+	background.update(dt)
 end
 
 function love.draw()
-	if not circleCanvasOnce then
-		circleCanvasOnce = true
-		love.graphics.setCanvas(vignetteCanvas)
-		for i = 200,60,-1 do
-			local gs = 255-(255*(i-60)/(200-60))
-			gs = math.floor(gs/20)*20
-			love.graphics.setColor(gs,gs,gs)
-			love.graphics.circle("fill", 192/2, 80, i)
-		end
-
-		love.graphics.setCanvas(circleCanvas)
-		love.graphics.setColor(BACKGROUND_COLOR)
-		love.graphics.rectangle("fill", 0, 0, 192, 108)
-
-		love.graphics.setColor(WHITE)
-		love.graphics.setBlendMode("multiply")
-		love.graphics.draw(vignetteCanvas)
-		love.graphics.setBlendMode("alpha")
-		love.graphics.setColor(SUN_COLOR)
-		love.graphics.circle("fill", 192/2, 80, 60)
-		love.graphics.setColor(WHITE)
-		love.graphics.setCanvas(backgroundCanvas)
-		love.graphics.draw(circleCanvas)
-		love.graphics.draw(circleCanvas, 0, 80, 0, 1, -0.35,0,80)
-		love.graphics.setColor(WATER_COLOR)
-		love.graphics.rectangle("fill", 0, 80, 192, 108-80)
-	end
 
 	love.graphics.setCanvas(canvas)
 	love.graphics.clear()
 	love.graphics.setColor(255, 255, 255)
-	sunDistortVectorImg:refresh()
-	distortShader:send('distortVec', sunDistortVectorImg)
-	love.graphics.setColor(WHITE)
-	love.graphics.setShader(distortShader)
-	love.graphics.draw(backgroundCanvas)
-	love.graphics.setShader()
+	background.draw()
 
 	for i,v in ipairs(bullets) do v:draw() end
 	for i,v in ipairs(players) do v:draw() end
+
+	for k, v in pairs(positionmanager.players) do
+		if v.active then
+			drawFakeBlimp(v.pos[1], v.pos[2], true)
+		else
+			drawFakeBlimp(v.pos[1], v.pos[2], false)
+		end
+	end
+	love.graphics.draw(logo, 192/2 - logo:getWidth()/2, 108/2 - logo:getHeight()/2 + 5*math.sin(simulationtime/2))
 
 	love.graphics.setCanvas()
 	screenshake:start()
 	love.graphics.draw(canvas, 0, 0, 0, 10, 10)
 	screenshake:stop()
+	
 end
 
 function love.keypressed(key)
 	keypressed[key] = true
 	if key == "escape" then love.event.push("quit") end
 	if key == "6" then love.load() end
+	if key == "1" or key == "2" or key == "3" or key == "4" then
+		if love.keyboard.isDown("lshift") then
+			positionmanager.wantsLeave(tonumber(key))
+		else
+			positionmanager.wantsJoin(tonumber(key))
+		end
+	end
 end
 
 function love.joystickpressed(js,key)
@@ -175,3 +136,29 @@ distortShader = love.graphics.newShader([[
 		return vec4(Texel(texture, vec2(texture_coords.x + distort, texture_coords.y)).rgb, 1.0);
 	}
 ]])
+
+-- listed from blimp:draw.
+-- Ideally the blimp class should be decoupled into
+-- a player and a blimp class, so that blimps can be drawn
+-- regardless of whether they have a gamepad associated with
+-- them or not, etc.
+function drawFakeBlimp(x, y, active)
+	-- love.graphics.circle("line", self.pos.x, self.pos.y, 7)
+	local dimFactor = 1.0
+	if not active then dimFactor = 0.5 end
+	love.graphics.setColor(255,255,255)
+	love.graphics.draw(cannonImage, x, y, math.pi, 1, 1, 1, 1)
+	love.graphics.setColor(colors.BLIMP_COLOR_SUB[1]*dimFactor, colors.BLIMP_COLOR_SUB[2]*dimFactor, colors.BLIMP_COLOR_SUB[2]*dimFactor)
+	love.graphics.rectangle("fill", x-2, y, 4, 3)
+	love.graphics.rectangle("fill", x-1, y, 2, 4)
+	love.graphics.push()
+	local blimpXloc = (x/192-0.5)*2
+	local blimpYloc = (y/108-0.5)*2
+	love.graphics.scale(1, 0.6)
+	love.graphics.setColor(colors.BLIMP_COLORS[1][1]+40, colors.BLIMP_COLORS[1][2]+50, colors.BLIMP_COLORS[1][3]+5)
+	love.graphics.circle("fill", x,(y-2)/0.6, 7)
+	love.graphics.setColor(colors.BLIMP_COLORS[2][1]*dimFactor, colors.BLIMP_COLORS[2][2]*dimFactor, colors.BLIMP_COLORS[2][3]*dimFactor)
+	love.graphics.circle("fill", x+blimpXloc,(y-2+blimpYloc)/0.6, 7)
+	love.graphics.pop()
+	love.graphics.setColor(255, 255, 255)
+end
