@@ -26,9 +26,25 @@ function introscreen.keypressed(key)
 	 playermanager.wantsJoin(tonumber(key))
       end
    end
-   if key == "enter" then
-      -- progress into gamemode here somehow
+   if key == "return" then
+      introscreen._transitionToGameMode()
    end
+end
+
+function introscreen._transitionToGameMode()
+   -- TODO: needs mechanism for delayed transition. E.g. when transitioning
+   -- TODO: to gamemode, we need to fade out the logo etc. Might also want
+   -- TODO: to move the players into position first when the game starts.
+   if playermanager.getNumActivePlayers() < 2 then
+      print("too few active players: ", playermanager.getNumActivePlayers())
+      -- TODO: indicate to the user somehow
+      return
+   end
+   for i, p in ipairs(playermanager.players) do
+      p.wobble = false
+      p.autoAim = false
+   end
+   currentMode = "game"
 end
 
 return introscreen

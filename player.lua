@@ -1,16 +1,16 @@
 player = class()
 
-function player:init(pos, joystick, angle, color)
+function player:init(pos, input, angle, color)
 	print("player made: " .. pos.x .. " " .. pos.y)
 	self.pos = pos
-	self.joystick = joystick
+	self.input = input
 	self.cannon = angle
 	self.bulletReset = false
 	self.radius = 7
 	self.hitTimer = 0
 	self.charge = 0
 	self.mainColor = color
-	self.wobble = true
+	self.wobble = true -- TODO: if this were a [0, 1] scalar, then we could smoothly tween out the wobble.
 	self.wobbleX = love.math.random(100)
 	self.wobbleY = love.math.random(100)
 	self.autoAim = true
@@ -18,9 +18,9 @@ end
 
 function player:update(dt)
 	self.hitTimer = self.hitTimer - dt
-	if self.hitTimer < 0 then self.joystick:setVibration(0,0) end
+	if self.hitTimer < 0 then self.input.vibrate(false) end
 	if self.dead then return true end
-	local anglevec = vec2(self.joystick:getAxis(4),-self.joystick:getAxis(5))
+	local anglevec = self.input:getAimDirection()
 	local angle = vec2(0,0):angleTo(anglevec)
 	if angle > math.pi/2 then angle = -math.pi
 	elseif angle > 0 then angle = 0 end
@@ -32,13 +32,13 @@ function player:update(dt)
 	-- 	self.pos.y = self.pos.y + dt*50
 	-- end
 
-	if self.joystick:getAxis(2) < - JOYSTICK_CUTOFF then
+	if self.input:getMovementDirections().left then
 		self.pos.y = self.pos.y - dt*66
 	end
-	if self.joystick:getAxis(1) < - JOYSTICK_CUTOFF then
+	if self.input:getMovementDirections().right then
 		self.pos.x = self.pos.x - dt*50 * (1.0 - self.charge*0.5)
 	end
-	if self.joystick:getAxis(1) > JOYSTICK_CUTOFF then
+	if self.input:getMovementDirections().up then
 		self.pos.x = self.pos.x + dt*50 * (1.0 - self.charge*0.5)
 	end
 	self.pos.x = math.min(192,math.max(0,self.pos.x))
@@ -48,9 +48,7 @@ function player:update(dt)
 	-- 		self.bulletReset = false
 	-- 	end
 	-- end
-	if    self.joystick:getAxis(6) > JOYSTICK_CUTOFF
-	   -- or self.joystick:getAxis(6) < -JOYSTICK_CUTOFF
-	   or self.joystick:isDown(5,6) then
+	if self.input:getFire() then
 	   -- print("charging")
 	   self.charge = math.min(1.2,self.charge + dt)
 	else
@@ -84,7 +82,7 @@ function player:draw()
 	blimp.draw(self.pos, rotation, self.mainColor, self.active)
 end
 function player:hit(bullet,dt)
-	self.joystick:setVibration(0.5,0.5)
+	self.input:vibrate(true)
 	self.pos = self.pos + 4*bullet.vel*dt
 	-- local pieces = math.random(2,5)
 	-- for i = 1,pieces do

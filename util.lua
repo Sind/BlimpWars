@@ -70,4 +70,72 @@ function util.roundAngleToNearestValid(angle)
    return validAngle
 end
 
+function util.randomBool(chanceOfTrue)
+   return love.math.random(0, 1) < chanceOfTrue
+end
+
+local noop = function()
+end
+
+local identity = function(x)
+  return x
+end
+
+local iscallable = function(x)
+  if type(x) == "function" then return true end
+  local mt = getmetatable(x)
+  return mt and mt.__call ~= nil
+end
+
+local isarray = function(x)
+  return (type(x) == "table" and x[1] ~= nil) and true or false
+end
+
+local getiter = function(x)
+  if isarray(x) then
+    return ipairs
+  elseif type(x) == "table" then
+    return pairs
+  end
+  error("expected table", 3)
+end
+
+local iteratee = function(x)
+   if x == nil then return identity end
+   if iscallable(x) then return x end
+   if type(x) == "table" then
+      return function(z)
+	 for k, v in pairs(x) do
+	    if z[k] ~= v then return false end
+	 end
+	 return true
+      end
+   end
+   return function(z) return z[x] end
+end
+
+function util.map(t, fn)
+  fn = iteratee(fn)
+  local iter = getiter(t)
+  local rtn = {}
+  for k, v in iter(t) do rtn[k] = fn(v) end
+  return rtn
+end
+
+function util.reduce(t, fn, first)
+   local acc = first
+   local started = first and true or false
+   local iter = getiter(t)
+   for _, v in iter(t) do
+      if started then
+	 acc = fn(acc, v)
+      else
+	 acc = v
+	 started = true
+      end
+   end
+   assert(started, "reduce of an empty table with no first value")
+   return acc
+end
+
 return util

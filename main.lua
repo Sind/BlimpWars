@@ -5,17 +5,18 @@ require "bullet"
 require "playermanager"
 require "background"
 require "colorscheme"
+require "input"
 require "modes/introscreen"
 require "modes/game"
 screenshake = require "screenshake"
 vec2 = require "vector"
 
-FAKE_JOYSTICKS = 4 -- set to > 0 to fake that number of gamepads being connected.
+FAKE_INPUTS = true -- set to true to fake inputs
 
 modes = {}
 currentMode = nil
 mainCanvas = nil
-joysticks = nil
+connectedInputs = {}
 
 function love.load()
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
@@ -34,18 +35,18 @@ function initialize()
 	mainCanvas:setWrap("clamp","clamp")
 
 	-- TODO: Joystick handling needs a redo, probably
-	joysticks = love.joystick.getJoysticks()
-	if FAKE_JOYSTICKS > 0 then
-	   joysticks = {}
-	   for i = 1,FAKE_JOYSTICKS do
-	      table.insert(joysticks, false) -- TODO: replace here with some sort of fake joystick object or so
-	   end
+	if FAKE_INPUTS then
+		for i = 1,4 do
+			table.insert(connectedInputs, inputDummy:new())
+		end
+	else
+		-- construct actual inputs from available gamepads and keyboard here
 	end
 
 	-- playermanager keeps track of players and automatically updates all players each frame etc.
 	-- put all players into their initial positions at the bottom
 	-- TODO: should playermanager know about joysticks? probably not!
-	playermanager.initializePositions(192, 108, joysticks)
+	playermanager.initializePositions(192, 108, connectedInputs)
 
 	-- load the background. Note that modes do not draw or update the background themselves.
 	background.load(192, 108)
@@ -69,6 +70,9 @@ function love.update(dt)
 	end
 	background.update(dt)
 	modes[currentMode].update(dt)
+	for _, input in ipairs(connectedInputs) do
+		input:update(dt)
+	end
 end
 
 function love.draw()
