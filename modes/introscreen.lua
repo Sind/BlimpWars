@@ -9,7 +9,7 @@ end
 
 function introscreen.update(dt)
    introscreen.simulationtime = introscreen.simulationtime + dt
-   playermanager.update(dt)
+   playermanager.update(dt, true)
 end
 
 function introscreen.draw()

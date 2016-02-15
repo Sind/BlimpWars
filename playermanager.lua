@@ -53,8 +53,12 @@ function playermanager.drawPlayers(drawInactives)
    end
 end
 
-function playermanager.updatePlayers(dt)
-   for i,v in ipairs(playermanager.players) do v:update(dt) end
+function playermanager.updatePlayers(dt, updateInactives)
+   for i,v in ipairs(playermanager.players) do
+      if v.active or updateInactives then
+	 v:update(dt)
+      end
+   end
 end
 
 function playermanager.wantsJoin(player)

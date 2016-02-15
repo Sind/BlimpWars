@@ -20,7 +20,7 @@ function bullet:update(dt)
 	if self.time > 0.15 then
 		-- TODO: should this be more decoupled so that collisions are checked in playermanager or so?
 		for i,v in ipairs(playermanager.players) do
-			if not v.dead and isColliding(v,self) then
+			if not v.dead and v.active and isColliding(v,self) then
 				v:hit(self,dt)
 				screenshake(25,0.7)
 				return true

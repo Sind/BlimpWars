@@ -29,7 +29,7 @@ function game.update(dt)
       tock("updating all game.bullets", 2)
       game.keypressed = {}
    end
-   playermanager.update(dt) -- TODO: disable updating inactive players?
+   playermanager.update(dt, false)
 end
 
 function game.draw()
