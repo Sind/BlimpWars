@@ -70,7 +70,7 @@ end
 
 function player:draw()
 	if self.dead then return end
-	blimp.draw(self.pos, self.cannon, self.mainColor)
+	blimp.draw(self.pos, self.cannon, self.mainColor, self.active)
 end
 function player:hit(bullet,dt)
 	self.joystick:setVibration(0.5,0.5)

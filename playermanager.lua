@@ -17,7 +17,7 @@ playermanager.players = nil;
 function playermanager.initializePositions(windowWidth, windowHeight, joysticks)
    local maxWidth = windowWidth*0.8
    local widthOffset = (windowWidth - maxWidth)/2.0
-   local bottomOffset = windowHeight - windowHeight*0.05
+   local bottomOffset = windowHeight - windowHeight*0.1
    playermanager.homePositions = {
       vec2(widthOffset, bottomOffset),
       vec2(widthOffset + maxWidth/3, bottomOffset),
@@ -45,10 +45,16 @@ function playermanager.initializePositions(windowWidth, windowHeight, joysticks)
    }
 end
 
-function playermanager.drawPlayers()
+function playermanager.drawPlayers(drawInactives)
    for k, v in ipairs(playermanager.players) do
-      v:draw()
+      if v.active or drawInactives then
+	 v:draw()
+      end
    end
+end
+
+function playermanager.updatePlayers(dt)
+   for i,v in ipairs(playermanager.players) do v:update(dt) end
 end
 
 function playermanager.wantsJoin(player)

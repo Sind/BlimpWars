@@ -46,8 +46,6 @@ function love.load()
 
 	playermanager.initializePositions(192, 108, joysticks)
 
-	players = {}
-	print()
 	--[[for i = 1,#joysticks do
 		local lin = (i-1)/math.max(1,#joysticks-1)
 		local pos = lin*(192-50)
@@ -77,9 +75,9 @@ function love.update(dt)
 
 	while accumulator > FRAME_SPEED do
 		accumulator = accumulator - FRAME_SPEED
-		for i,v in ipairs(players) do v:update(FRAME_SPEED) end
+		--playermanager.updatePlayers(FRAME_SPEED) -- TODO: once the game starts, this needs to be called.
 		tick("updating all bullets")
-		if #bullets ~= 0 then
+		if #bullets ~= 0 then -- put this into a bulletmanager or sth
 			for i = #bullets,1,-1 do
 				--for i = 1,#bullets do
 				local b = bullets[i]
@@ -102,15 +100,15 @@ function love.draw()
 
 	for i,v in ipairs(bullets) do v:draw() end
 	--for i,v in ipairs(players) do v:draw() end
-	playermanager.drawPlayers()
+	playermanager.drawPlayers(true)
 
-	love.graphics.draw(logo, 192/2 - logo:getWidth()/2, 108/2 - logo:getHeight()/2 + 5*math.sin(simulationtime/2))
+	love.graphics.draw(logo, 192/2 - logo:getWidth()/2, 108/2 - logo:getHeight()/2 + 5 + 4.8*math.sin(simulationtime/2))
 
 	love.graphics.setCanvas()
 	screenshake:start()
 	love.graphics.draw(canvas, 0, 0, 0, 10, 10)
 	screenshake:stop()
-	
+
 end
 
 function love.keypressed(key)
@@ -128,9 +126,4 @@ end
 
 function love.joystickpressed(js,key)
 	if key == 8 then love.load() end
-end
-
-function isColliding(a,b)
-	local dist = (a.pos - b.pos):len()
-	return a.radius + b.radius > dist
 end

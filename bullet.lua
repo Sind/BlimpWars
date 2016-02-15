@@ -34,3 +34,8 @@ function bullet:draw()
 	love.graphics.circle("fill", self.pos.x, self.pos.y, 1)
 	love.graphics.setColor(WHITE)
 end
+
+function isColliding(a,b)
+	local dist = (a.pos - b.pos):len()
+	return a.radius + b.radius > dist
+end
