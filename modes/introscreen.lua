@@ -24,6 +24,9 @@ function introscreen.keypressed(key)
 	 playermanager.wantsJoin(tonumber(key))
       end
    end
+   if key == "enter" then
+      -- progress into gamemode here somehow
+   end
 end
 
 return introscreen

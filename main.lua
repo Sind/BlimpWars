@@ -20,11 +20,18 @@ function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest")
 	love.window.setMode(1920,1080, {fullscreen = true})
 
+	-- Most of the love.load is factored into the initialize()
+	-- function, so that we can call initialize() to restart
+	-- the game, but not have love flicker the window.
+	initialize()
+end
+
+function initialize()
 	-- everything will be rendered to this canvas, which is then rendered upscaled to the screen.
 	mainCanvas = love.graphics.newCanvas(192, 108)
 	mainCanvas:setWrap("clamp","clamp")
 
-	-- Joystick handling needs a redo, probably
+	-- TODO: Joystick handling needs a redo, probably
 	joysticks = love.joystick.getJoysticks()
 	if FAKE_JOYSTICKS > 0 then
 	   joysticks = {}
@@ -47,8 +54,9 @@ function love.load()
 	blimp.load()
 	modes["introscreen"] = introscreen
 	modes["game"] = game
-	-- mode the game boots into
+	-- mode the game boots into.
 	currentMode = "introscreen"
+	collectgarbage()
 end
 
 framecount = 0
@@ -78,10 +86,10 @@ end
 
 function love.keypressed(key)
 	if key == "escape" then love.event.push("quit") end
-	if key == "6" then love.load() end
+	if key == "6" then initialize() end
 	modes[currentMode].keypressed(key)
 end
 
 function love.joystickpressed(js,key)
-	if key == 8 then love.load() end
+	if key == 8 then initialize() end
 end

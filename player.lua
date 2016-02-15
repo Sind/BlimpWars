@@ -10,9 +10,9 @@ function player:init(pos, joystick, angle, color)
 	self.hitTimer = 0
 	self.charge = 0
 	self.mainColor = color
-	--local cannonImageData = love.image.newImageData(10, 2)
-	--for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
-	--player.cannonImage = love.graphics.newImage(cannonImageData)
+	self.wobble = true
+	self.wobbleX = love.math.random(100)
+	self.wobbleY = love.math.random(100)
 end
 
 function player:update(dt)
@@ -70,6 +70,12 @@ end
 
 function player:draw()
 	if self.dead then return end
+	local position = self.pos
+	if self.wobble then
+	   local time = love.timer.getTime()
+	   position.x = 0.03*math.cos(time + self.wobbleX) + position.x
+	   position.y = 0.03*math.sin(time + self.wobbleY) + position.y
+	end
 	blimp.draw(self.pos, self.cannon, self.mainColor, self.active)
 end
 function player:hit(bullet,dt)
