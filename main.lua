@@ -1,3 +1,4 @@
+require "strict"
 require "class"
 require "blimp"
 require "bullet"
@@ -14,6 +15,7 @@ FAKE_JOYSTICKS = 4 -- set to > 0 to fake that number of gamepads being connected
 modes = {}
 currentMode = nil
 mainCanvas = nil
+joysticks = nil
 
 function love.load()
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
