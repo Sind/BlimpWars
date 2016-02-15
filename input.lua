@@ -7,18 +7,11 @@ function inputDummy:init()
    self.movementDirections = {up=false, left=false, right=false}
    self.aimDirection = vec2(0, 1)
    self.firing = false
+   self.isDummyInput = true
 end
 
 function inputDummy:update(dt)
-   self.timer = self.timer + dt
-   if self.timer > 1 then
-      print("rerolling inputs")
-      self.timer = 0
-      self.movementDirections.up = util.randomBool(0.8)
-      self.movementDirections.left = util.randomBool(0.5)
-      self.movementDirections.right = util.randomBool(0.5)
-      self.firing = util.randomBool(0.3)
-   end
+
 end
 
 function inputDummy:getMovementDirections()

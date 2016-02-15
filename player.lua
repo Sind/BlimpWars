@@ -16,9 +16,16 @@ function player:init(pos, input, angle, color)
 	self.wobbleX = love.math.random(100)
 	self.wobbleY = love.math.random(100)
 	self.autoAim = true
+
+	if self.input.isDummyInput then
+		self.ai = ai:new(self, self.input)
+	end
 end
 
 function player:update(dt)
+	if self.ai then
+		self.ai:update(dt)
+	end
 	self.hitTimer = self.hitTimer - dt
 	if self.hitTimer < 0 then self.input.vibrate(false) end
 	if self.dead then return true end
