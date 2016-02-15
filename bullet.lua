@@ -16,6 +16,12 @@ function bullet:update(dt)
 	self.vel.y = self.vel.y + GRAVITY*dt
 	self.pos = self.pos + self.vel *dt
 	if self.pos.y > 110 then return true end
+        --if self.pos.y > 108 then self.pos.y = self.pos.y - 108 end
+        --if self.pos.y < 0 then self.pos.y = self.pos.y + 108 end
+        --if self.pos.x > 192 then self.pos.x = self.pos.x - 192 end
+        --if self.pos.x < 0 then self.pos.x = self.pos.x + 192 end
+
+
 	if self.confetti then return false end
 	if self.time > 0.15 then
 		-- TODO: should this be more decoupled so that collisions are checked in playermanager or so?

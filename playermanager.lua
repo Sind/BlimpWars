@@ -14,7 +14,7 @@ playermanager.statePositions = nil;
 -- player data
 playermanager.players = nil;
 
-function playermanager.initializePositions(windowWidth, windowHeight, joysticks)
+function playermanager.initializePositions(windowWidth, windowHeight, inputs)
    local maxWidth = windowWidth*0.8
    local widthOffset = (windowWidth - maxWidth)/2.0
    local bottomOffset = windowHeight - windowHeight*0.1
@@ -25,10 +25,10 @@ function playermanager.initializePositions(windowWidth, windowHeight, joysticks)
       vec2(windowWidth - widthOffset, bottomOffset)
    }
    playermanager.players = {}
-   
+
    -- we always generate a full set of four players at the bottom, even if fewer gamepads are connected.
    for i = 1, 4 do
-      playermanager.players[i] = player:new(playermanager.homePositions[i]:clone(), joysticks[i], math.pi, colors.BLIMP_COLORS[i])
+      playermanager.players[i] = player:new(playermanager.homePositions[i]:clone(), inputs[i], math.pi, colors.BLIMP_COLORS[i])
       playermanager.active = false
    end
 
@@ -71,7 +71,7 @@ end
 function playermanager.wantsLeave(player)
    if not playermanager.players[player].active then print("player " .. tostring(player) .. " already inactive."); return end
    playermanager.players[player].active = false
-   
+
    -- move the player that left to its home-position
    playermanager._move(0.5, playermanager.players[player].pos, playermanager.homePositions[player]:clone(), "outCirc")
 

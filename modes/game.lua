@@ -8,14 +8,14 @@ game = {
 FRAME_SPEED = 1/60
 
 function game.load()
-   
+
 end
 
 function game.update(dt)
    game.simulationtime = game.simulationtime + dt
    game.accumulator = game.accumulator + dt
    screenshake:update(dt)
-   
+
    while game.accumulator > FRAME_SPEED do
       game.accumulator = game.accumulator - FRAME_SPEED
       playermanager.updatePlayers(FRAME_SPEED)
@@ -27,7 +27,6 @@ function game.update(dt)
 	 end
       end
       tock("updating all game.bullets", 2)
-      game.keypressed = {}
    end
    playermanager.update(dt, false)
 end
@@ -38,7 +37,7 @@ function game.draw()
 end
 
 function game.keypressed(key)
-   game.keypressed[key] = true
+
 end
 
 return game
