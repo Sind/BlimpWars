@@ -2,6 +2,9 @@ FRAME_SPEED = 1/60
 
 FAKE_JOYSTICKS = 4 -- set to > 0 to fake that number of gamepads being connected.
 
+modes = {}
+currentMode = nil
+
 function love.load()
 	if jit ~= nil then
 		print("Running under luajit...")
@@ -28,6 +31,15 @@ function love.load()
 	background = require "background"
 	screenshake = require "screenshake"
 	require "colorscheme"
+	require "modes/introscreen"
+	require "modes/game"
+
+	modes["introscreen"] = introscreen
+	modes["game"] = game
+
+	-- mode the game boots into
+	currentMode = "introscreen"
+
 	blimp.init()
 
 
@@ -54,41 +66,22 @@ function love.load()
 		-- players = {blimp:new(50,50,joysticks[1],-math.pi/4), blimp:new(192-50,50,joysticks[2],-3*math.pi/4)}
 		table.insert(players,p)
 	   end]]--
-	accumulator = 0
 	bullets = {}
 	keypressed = {}
 
-	logo = love.graphics.newImage("blimpwars-logo.png")
 	background.load(192, 108)
+	modes[currentMode].load()
+
 end
 
 framecount = 0
-simulationtime = 0
 function love.update(dt)
 	framecount = framecount + 1
 	if framecount % 300 == 0 then
 		print("FPS: " .. tostring(love.timer.getFPS()))
 	end
-	simulationtime = simulationtime + dt
-	accumulator = accumulator + dt
-	screenshake:update(dt)
-
-	while accumulator > FRAME_SPEED do
-		accumulator = accumulator - FRAME_SPEED
-		--playermanager.updatePlayers(FRAME_SPEED) -- TODO: once the game starts, this needs to be called.
-		tick("updating all bullets")
-		if #bullets ~= 0 then -- put this into a bulletmanager or sth
-			for i = #bullets,1,-1 do
-				--for i = 1,#bullets do
-				local b = bullets[i]
-				if b:update(FRAME_SPEED) then table.remove(bullets,i) end
-			end
-		end
-		tock("updating all bullets", 2)
-		keypressed = {}
-	end
-	playermanager.update(dt)
 	background.update(dt)
+	modes[currentMode].update(dt)
 end
 
 function love.draw()
@@ -98,11 +91,7 @@ function love.draw()
 	love.graphics.setColor(255, 255, 255)
 	background.draw()
 
-	for i,v in ipairs(bullets) do v:draw() end
-	--for i,v in ipairs(players) do v:draw() end
-	playermanager.drawPlayers(true)
-
-	love.graphics.draw(logo, 192/2 - logo:getWidth()/2, 108/2 - logo:getHeight()/2 + 5 + 4.8*math.sin(simulationtime/2))
+	modes[currentMode].draw()
 
 	love.graphics.setCanvas()
 	screenshake:start()
@@ -115,13 +104,7 @@ function love.keypressed(key)
 	keypressed[key] = true
 	if key == "escape" then love.event.push("quit") end
 	if key == "6" then love.load() end
-	if key == "1" or key == "2" or key == "3" or key == "4" then
-		if love.keyboard.isDown("lshift") then
-			playermanager.wantsLeave(tonumber(key))
-		else
-			playermanager.wantsJoin(tonumber(key))
-		end
-	end
+	modes[currentMode].keypressed(key)
 end
 
 function love.joystickpressed(js,key)
