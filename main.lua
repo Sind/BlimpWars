@@ -1,53 +1,30 @@
-FRAME_SPEED = 1/60
+require "class"
+require "blimp"
+require "bullet"
+require "playermanager"
+require "background"
+require "colorscheme"
+require "modes/introscreen"
+require "modes/game"
+screenshake = require "screenshake"
+vec2 = require "vector"
 
 FAKE_JOYSTICKS = 4 -- set to > 0 to fake that number of gamepads being connected.
 
 modes = {}
 currentMode = nil
+mainCanvas = nil
 
 function love.load()
-	if jit ~= nil then
-		print("Running under luajit...")
-		status = jit.status()
-		if status then
-			print("JIT is enabled...")
-		else
-			print("JIT is disabled...")
-		end
-	end
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
 	love.graphics.setDefaultFilter("nearest","nearest")
 	love.window.setMode(1920,1080, {fullscreen = true})
 
-	canvas = love.graphics.newCanvas(192, 108)
+	-- everything will be rendered to this canvas, which is then rendered upscaled to the screen.
+	mainCanvas = love.graphics.newCanvas(192, 108)
+	mainCanvas:setWrap("clamp","clamp")
 
-	canvas:setWrap("clamp","clamp")
-
-	vec2 = require "vector"
-	require "class"
-	require "blimp"
-	require "bullet"
-	require "playermanager"
-	background = require "background"
-	screenshake = require "screenshake"
-	require "colorscheme"
-	require "modes/introscreen"
-	require "modes/game"
-
-	modes["introscreen"] = introscreen
-	modes["game"] = game
-
-	-- mode the game boots into
-	currentMode = "introscreen"
-
-	blimp.init()
-
-
-	-- assert(#joysticks >= 2,"not enough joysticks")
-	--local cannonImageData = love.image.newImageData(10, 2)
-	--for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
-	--cannonImage = love.graphics.newImage(cannonImageData)
-
+	-- Joystick handling needs a redo, probably
 	joysticks = love.joystick.getJoysticks()
 	if FAKE_JOYSTICKS > 0 then
 	   joysticks = {}
@@ -56,22 +33,22 @@ function love.load()
 	   end
 	end
 
+	-- playermanager keeps track of players and automatically updates all players each frame etc.
+	-- put all players into their initial positions at the bottom
+	-- TODO: should playermanager know about joysticks? probably not!
 	playermanager.initializePositions(192, 108, joysticks)
 
-	--[[for i = 1,#joysticks do
-		local lin = (i-1)/math.max(1,#joysticks-1)
-		local pos = lin*(192-50)
-		local angle = -lin*math.pi/2 - math.pi/4
-		local p = blimp:new(25+pos,50,joysticks[i],angle,colors.BLIMP_COLORS[i])
-		-- players = {blimp:new(50,50,joysticks[1],-math.pi/4), blimp:new(192-50,50,joysticks[2],-3*math.pi/4)}
-		table.insert(players,p)
-	   end]]--
-	bullets = {}
-	keypressed = {}
-
+	-- load the background. Note that modes do not draw or update the background themselves.
 	background.load(192, 108)
-	modes[currentMode].load()
-
+	-- initialize the gamemodes
+	introscreen.load()
+	game.load()
+	-- blimp module needs to pregenerate a tiny image, so let it do that
+	blimp.load()
+	modes["introscreen"] = introscreen
+	modes["game"] = game
+	-- mode the game boots into
+	currentMode = "introscreen"
 end
 
 framecount = 0
@@ -85,8 +62,7 @@ function love.update(dt)
 end
 
 function love.draw()
-
-	love.graphics.setCanvas(canvas)
+	love.graphics.setCanvas(mainCanvas)
 	love.graphics.clear()
 	love.graphics.setColor(255, 255, 255)
 	background.draw()
@@ -95,13 +71,12 @@ function love.draw()
 
 	love.graphics.setCanvas()
 	screenshake:start()
-	love.graphics.draw(canvas, 0, 0, 0, 10, 10)
+	love.graphics.draw(mainCanvas, 0, 0, 0, 10, 10)
 	screenshake:stop()
 
 end
 
 function love.keypressed(key)
-	keypressed[key] = true
 	if key == "escape" then love.event.push("quit") end
 	if key == "6" then love.load() end
 	modes[currentMode].keypressed(key)

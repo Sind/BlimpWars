@@ -1,4 +1,4 @@
-local background = {}
+background = {}
 
 local WHITE = {255,255,255,255}
 local BLACK = {0,0,0}
