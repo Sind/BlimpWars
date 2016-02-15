@@ -17,6 +17,7 @@ function inputDummy:update(dt)
       self.movementDirections.up = util.randomBool(0.8)
       self.movementDirections.left = util.randomBool(0.5)
       self.movementDirections.right = util.randomBool(0.5)
+      self.firing = util.randomBool(0.3)
    end
 end
 

@@ -29,6 +29,9 @@ function introscreen.keypressed(key)
    if key == "return" then
       introscreen._transitionToGameMode()
    end
+   if key == "backspace" then
+      introscreen._transitionToCredits()
+   end
 end
 
 function introscreen._transitionToGameMode()
@@ -45,6 +48,10 @@ function introscreen._transitionToGameMode()
       p.autoAim = false
    end
    currentMode = "game"
+end
+
+function introscreen._transitionToCredits()
+   currentMode = "credits"
 end
 
 return introscreen

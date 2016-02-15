@@ -1,11 +1,5 @@
 background = {}
 
-local WHITE = {255,255,255,255}
-local BLACK = {0,0,0}
-local BACKGROUND_COLOR = {82, 12, 4}
-local SUN_COLOR = {254, 150, 15}
-local WATER_COLOR = {0, 5, 50, 50}
-
 function background.load(renderWidth, renderHeight)
    print("background loaded")
    --background.canvas = love.graphics.newCanvas(renderWidth, renderHeight)
@@ -54,20 +48,20 @@ function background.drawOnce()
    end
    
    love.graphics.setCanvas(background.circleCanvas)
-   love.graphics.setColor(BACKGROUND_COLOR)
+   love.graphics.setColor(colors.BACKGROUND_COLOR)
    love.graphics.rectangle("fill", 0, 0, 192, 108)
    
-   love.graphics.setColor(WHITE)
+   love.graphics.setColor(colors.WHITE)
    love.graphics.setBlendMode("multiply")
    love.graphics.draw(background.vignetteCanvas)
    love.graphics.setBlendMode("alpha")
-   love.graphics.setColor(SUN_COLOR)
+   love.graphics.setColor(colors.SUN_COLOR)
    love.graphics.circle("fill", 192/2, 80, 60)
-   love.graphics.setColor(WHITE)
+   love.graphics.setColor(colors.WHITE)
    love.graphics.setCanvas(background.backgroundCanvas)
    love.graphics.draw(background.circleCanvas)
    love.graphics.draw(background.circleCanvas, 0, 80, 0, 1, -0.35, 0, 80)
-   love.graphics.setColor(WATER_COLOR)
+   love.graphics.setColor(colors.WATER_COLOR)
    love.graphics.rectangle("fill", 0, 80, 192, 108-80)
    love.graphics.setCanvas()
 end
@@ -75,7 +69,7 @@ end
 function background.draw()
    background.sunDistortVectorImg:refresh()
    background.distortShader:send('distortVec', background.sunDistortVectorImg)
-   love.graphics.setColor(WHITE)
+   love.graphics.setColor(colors.WHITE)
    love.graphics.setShader(background.distortShader)
    love.graphics.draw(background.backgroundCanvas)
    love.graphics.setShader()

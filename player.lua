@@ -1,5 +1,7 @@
 player = class()
 
+BULLET_FORCE = 100
+
 function player:init(pos, input, angle, color)
 	print("player made: " .. pos.x .. " " .. pos.y)
 	self.pos = pos
@@ -55,7 +57,7 @@ function player:update(dt)
 		if self.charge > 0.25 then
 			local pos = self.pos + vec2(9,0):rotated(self.cannon)
 			local b = bullet:new(pos,vec2(self.charge*BULLET_FORCE*math.cos(self.cannon),self.charge*BULLET_FORCE*math.sin(self.cannon)))
-			table.insert(bullets,b)
+			table.insert(game.bullets,b)
 		end
 		self.charge = 0
 	end
@@ -81,7 +83,7 @@ function player:draw()
 	end
 	blimp.draw(self.pos, rotation, self.mainColor, self.active)
 end
-function player:hit(bullet,dt)
+function player:hit(bullet, dt)
 	self.input:vibrate(true)
 	self.pos = self.pos + 4*bullet.vel*dt
 	-- local pieces = math.random(2,5)
@@ -94,22 +96,24 @@ function player:hit(bullet,dt)
 	self.hitTimer = 1
 	self.dead = true
 	local deadvec = {3,5,6,7,7,6,5,3,2,2,1}
-	for i = 1,#deadvec do
-		for j = 1,deadvec[i] do
-			local color = (i > 8 and PLAYER_COLOR_SUB or self.mainColor)
+	for i = 1, #deadvec do
+		for j = 1, deadvec[i] do
+			local color = nil
+			if i > 8 then color = colors.BLIMP_COLOR_SUB else color = self.mainColor end
+			if i > 8 then print(unpack(color)) end
 			local y = self.pos.y-8+i
 			local x = self.pos.x-(j-1)
 			local x2 = self.pos.x+j-1
 
 			local rotate = math.random(-30,30)/180*math.pi
 			local v = (bullet.vel):rotated(rotate)/2
-			local c = bullet:new(vec2(x,y),v,true,color)
+			local c = bullet:new(vec2(x,y), v, true, color)
 
 			local rotate = math.random(-30,30)/180*math.pi
 			local v = (bullet.vel):rotated(rotate)/2
-			local d = bullet:new(vec2(x2,y),v,true,color)
-			table.insert(bullets,c)
-			table.insert(bullets,d)
+			local d = bullet:new(vec2(x2,y), v, true, color)
+			table.insert(game.bullets, c)
+			table.insert(game.bullets, d)
 		end
 	end
 end

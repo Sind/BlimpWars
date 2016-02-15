@@ -8,20 +8,34 @@ require "colorscheme"
 require "input"
 require "modes/introscreen"
 require "modes/game"
+require "modes/credits"
 screenshake = require "screenshake"
 vec2 = require "vector"
 
 FAKE_INPUTS = true -- set to true to fake inputs
 
+-- TODO: mode transitions should really be managed by some sort of
+-- TODO: state-manager so that we can have automatic mode:onEnter(),
+-- TODO: mode:onLeave(), mode:load(), mode:unload() callbacks etc.
+-- TODO: that way e.g. the credits screen can unload its textures
+-- TODO: when leaving it, and reload them on enter. We can also get
+-- TODO: automatic GC when moving between modes.
 modes = {}
 currentMode = nil
 mainCanvas = nil
 connectedInputs = {}
+scaleFactor = 1
 
-function love.load()
+function love.load(args)
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
 	love.graphics.setDefaultFilter("nearest","nearest")
-	love.window.setMode(1920,1080, {fullscreen = true})
+	--love.window.setMode(1920, 1080, {fullscreen = true})
+	love.window.setMode(3200, 1800, {fullscreen = true})
+	scaleFactor = love.graphics.getWidth()/192
+
+	if (#args) > 1 then
+		currentMode = args[2]
+	end
 
 	-- Most of the love.load is factored into the initialize()
 	-- function, so that we can call initialize() to restart
@@ -53,12 +67,14 @@ function initialize()
 	-- initialize the gamemodes
 	introscreen.load()
 	game.load()
+	credits.load()
 	-- blimp module needs to pregenerate a tiny image, so let it do that
 	blimp.load()
 	modes["introscreen"] = introscreen
 	modes["game"] = game
-	-- mode the game boots into.
-	currentMode = "introscreen"
+	modes["credits"] = credits
+	-- mode the game boots into by default, overridden by commandline
+	if not currentMode then currentMode = "introscreen" end
 	collectgarbage()
 end
 
@@ -85,12 +101,13 @@ function love.draw()
 
 	love.graphics.setCanvas()
 	screenshake:start()
-	love.graphics.draw(mainCanvas, 0, 0, 0, 10, 10)
+	love.graphics.draw(mainCanvas, 0, 0, 0, scaleFactor, scaleFactor)
 	screenshake:stop()
 
 end
 
 function love.keypressed(key)
+	-- TODO review keybinds before deployment
 	if key == "escape" then love.event.push("quit") end
 	if key == "6" then initialize() end
 	modes[currentMode].keypressed(key)
