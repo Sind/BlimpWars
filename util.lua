@@ -54,4 +54,20 @@ function util.enumeratePermutationVectors(a)
    return permutations
 end
 
+function util.angle(x1, y1, x2, y2)
+  return math.atan2(y2 - y1, x2 - x1)
+end
+
+function util.roundAngleToNearestValid(angle)
+   local validAngle = angle
+   if angle > 0 then
+      if angle > 0.5*math.pi then
+	 validAngle = math.pi
+      else
+	 validAngle = 0
+      end
+   end
+   return validAngle
+end
+
 return util

@@ -4,6 +4,7 @@ introscreen = {
 
 function introscreen.load()
    introscreen.logo = love.graphics.newImage("blimpwars-logo.png")
+   introscreen.buttontext = love.graphics.newImage("join-start-text.png")
 end
 
 function introscreen.update(dt)
@@ -13,7 +14,8 @@ end
 
 function introscreen.draw()
    playermanager.drawPlayers(true)
-   love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2, 108/2 - introscreen.logo:getHeight()/2 + 5 + 4.8*math.sin(introscreen.simulationtime/2))
+   love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2, 108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2))
+   love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2, 108/2 - introscreen.buttontext:getHeight()/2 + 13 + 4.8*math.sin(introscreen.simulationtime/2 + 0.8))
 end
 
 function introscreen.keypressed(key)

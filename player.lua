@@ -13,6 +13,7 @@ function player:init(pos, joystick, angle, color)
 	self.wobble = true
 	self.wobbleX = love.math.random(100)
 	self.wobbleY = love.math.random(100)
+	self.autoAim = true
 end
 
 function player:update(dt)
@@ -72,11 +73,15 @@ function player:draw()
 	if self.dead then return end
 	local position = self.pos
 	if self.wobble then
-	   local time = love.timer.getTime()
-	   position.x = 0.03*math.cos(time + self.wobbleX) + position.x
-	   position.y = 0.03*math.sin(time + self.wobbleY) + position.y
+		local time = love.timer.getTime()
+		position.x = 0.03*math.cos(time + self.wobbleX) + position.x
+		position.y = 0.03*math.sin(time + self.wobbleY) + position.y
 	end
-	blimp.draw(self.pos, self.cannon, self.mainColor, self.active)
+	local rotation = self.cannon
+	if self.autoAim then
+		rotation = util.roundAngleToNearestValid(util.angle(position.x, position.y, 192/2, 108/2)) -- TODO: magic values
+	end
+	blimp.draw(self.pos, rotation, self.mainColor, self.active)
 end
 function player:hit(bullet,dt)
 	self.joystick:setVibration(0.5,0.5)
