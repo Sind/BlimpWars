@@ -7,7 +7,6 @@ function ai:init(playerObject, inputObject)
 	self.player = playerObject
 	self.input = inputObject
 	self.dodgequeue = {}
-	self.dodgeTimeout = 0
 	--playermanager.wantsJoin(self)
 end
 
@@ -21,7 +20,6 @@ end
 function ai:update(dt)
 	self.timer = self.timer + dt
 	self.shotTimer = self.shotTimer + dt
-	self.dodgeTimeout = self.dodgeTimeout - dt
 	if self.timer > 1.0 then
 		self.timer = 0
 		self.input.movementDirections.up = util.randomBool(0.85)
@@ -33,6 +31,16 @@ function ai:update(dt)
 	if self.shotTimer > 1.0 then
 		self.shotTimer = 0
 		self.input.firing = false
+		if math.abs(self.input.aimDirection.x) < 0.1 then
+			print("initiating emergency dodge!")
+			for i = 1,40 do -- dodge for N frames
+				if self.player.pos.x < 192/2 then
+					table.insert(self.dodgequeue, 1)
+				else
+					table.insert(self.dodgequeue, 2)
+				end
+			end
+		end
 	end
 	local targetedPlayerDistance = 1/0
 	local targetedPlayerPosition = nil;
@@ -56,19 +64,7 @@ function ai:update(dt)
 		self.input.aimDirection.y = -self.input.aimDirection.y
 		-- always try to fall at least 6 pixels below the player we're targetting.
 		if targetedPlayerPosition.y > self.player.pos.y + 6 then
-	 self.input.movementDirections.up = false
-		end
-		-- when shooting straight up, simply doge to the right.
-		if math.abs(self.input.aimDirection.x) < 0.1 and self.dodgeTimeout < 0 then
-			print("initiating emergency dodge!")
-			self.dodgeTimout = 2
-			for i = 1,20 do -- dodge for N frames
-				if self.player.pos.x < 192/2 then
-					table.insert(self.dodgequeue, 1)
-				else
-					table.insert(self.dodgequeue, 2)
-				end
-			end
+			 self.input.movementDirections.up = false
 		end
 	else
 		--print("found no player to target")
