@@ -6,7 +6,7 @@ colors = {
 	BACKGROUND_COLOR = {82, 12, 4},
 	SUN_COLOR = {254, 150, 15},
 	WATER_COLOR = {0, 5, 50, 50},
-	
+
 	BLIMP_COLORS = {
 		{128, 0, 0},
 		{85, 29, 0},

@@ -108,14 +108,14 @@ function love.draw()
 end
 
 function love.keypressed(key)
-   -- TODO review keybinds before deployment
-   if key == "escape" then love.event.push("quit")
-   elseif key == "6" then
-      currentMode = "introscreen"
-      initialize()
-   else
-      modes[currentMode].keypressed(key)
-   end
+	-- TODO review keybinds before deployment
+	if key == "escape" then love.event.push("quit")
+	elseif key == "6" then
+		currentMode = "introscreen"
+		initialize()
+	else
+		modes[currentMode].keypressed(key)
+	end
 end
 
 function love.joystickpressed(js,key)

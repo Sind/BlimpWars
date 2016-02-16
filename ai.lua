@@ -27,8 +27,8 @@ function ai:update(dt)
 	local targetedPlayerPosition = nil;
 	for i, p in ipairs(playermanager.players) do
 		if p.active and not p.dead and p.pos.dist(p.pos, self.player.pos) < targetedPlayerDistance and p ~= self.player then
-	 targetedPlayerDistance = p.pos.dist(p.pos, self.player.pos)
-	 targetedPlayerPosition = p.pos:clone()
+			targetedPlayerDistance = p.pos.dist(p.pos, self.player.pos)
+			targetedPlayerPosition = p.pos:clone()
 		end
 	end
 	if targetedPlayerPosition then
