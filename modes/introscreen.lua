@@ -1,5 +1,8 @@
 introscreen = {
-	simulationtime = 0
+	simulationtime = 0,
+	transitionAnimations = {},
+	isTransitioning = false,
+	bannerOffset = 0
 }
 
 function introscreen.load()
@@ -10,12 +13,28 @@ end
 function introscreen.update(dt)
 	introscreen.simulationtime = introscreen.simulationtime + dt
 	playermanager.update(dt, true)
+	if introscreen.isTransitioning then
+		for i = #introscreen.transitionAnimations,1,-1 do
+			print("updating")
+			local res = introscreen.transitionAnimations[i]:update(dt)
+			if res then
+				table.remove(introscreen.transitionAnimations, i)
+			end
+		end
+		if #introscreen.transitionAnimations == 0 then
+			introscreen.isTransitioning = false
+			introscreen.bannerOffset = 0
+			introscreen._transitionToGameMode()
+		end
+	end
 end
 
 function introscreen.draw()
 	playermanager.drawPlayers(true)
-	love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2, 108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2))
-	love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2, 108/2 - introscreen.buttontext:getHeight()/2 + 13 + 4.8*math.sin(introscreen.simulationtime/2 + 0.8))
+	love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2,
+					108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2) + introscreen.bannerOffset)
+	love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2, 108/2 - introscreen.buttontext:getHeight()/2
+						+ 13 + 4.8*math.sin(introscreen.simulationtime/2 + 0.8) + introscreen.bannerOffset)
 end
 
 function introscreen.keypressed(key)
@@ -28,7 +47,20 @@ function introscreen.keypressed(key)
 		end
 	end
 	if key == "return" then
-		introscreen._transitionToGameMode()
+		if playermanager.getNumActivePlayers() < 2 then
+			print("too few active players: ", playermanager.getNumActivePlayers())
+			-- TODO: indicate to the user somehow
+			return
+		end
+		introscreen.isTransitioning = true
+		table.insert(introscreen.transitionAnimations, tween.new(1, introscreen, {bannerOffset = -100}, "inOutBack"))
+		for i, p in ipairs(playermanager.players) do
+			if not p.active then
+				local newPos = p.pos:clone()
+				newPos.y = newPos.y + 40
+				table.insert(introscreen.transitionAnimations, tween.new(1, p.pos, newPos, "inOutQuint"))
+			end
+		end
 	end
 	if key == "backspace" then
 		introscreen._transitionToCredits()
@@ -36,14 +68,6 @@ function introscreen.keypressed(key)
 end
 
 function introscreen._transitionToGameMode()
-	-- TODO: needs mechanism for delayed transition. E.g. when transitioning
-	-- TODO: to gamemode, we need to fade out the logo etc. Might also want
-	-- TODO: to move the players into position first when the game starts.
-	if playermanager.getNumActivePlayers() < 2 then
-		print("too few active players: ", playermanager.getNumActivePlayers())
-		-- TODO: indicate to the user somehow
-		return
-	end
 	for i, p in ipairs(playermanager.players) do
 		p.wobble = false
 		p.autoAim = false

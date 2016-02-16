@@ -33,7 +33,7 @@ function ai:update(dt)
 		self.input.firing = false
 		if math.abs(self.input.aimDirection.x) < 0.1 then
 			print("initiating emergency dodge!")
-			for i = 1,40 do -- dodge for N frames
+			for i = 1,120 do -- dodge for N frames
 				if self.player.pos.x < 192/2 then
 					table.insert(self.dodgequeue, 1)
 				else
@@ -71,7 +71,16 @@ function ai:update(dt)
 	end
 	--local angle = ai.targetCoordinates(192/2 - self.player.pos.x, 108/2 + self.player.pos.y)
 	--self.input.aimDirection = vec2(math.cos(angle), math.sin(angle))
-
+	for i, b in ipairs(game.bullets) do
+		local bulletToSelfVector = (b.pos - self.player.pos):normalized()
+		local dotProd = bulletToSelfVector*b.vel:normalized()
+		if math.abs(dotProd - 1) < 0.1 then
+			for i = 1,5 do
+				table.insert(self.dodgequeue, 2)
+				print("bullet dodge")
+			end
+		end
+	end
 	-- perform an emergency dodge
 	if #self.dodgequeue ~= 0 then
 		local action = table.remove(self.dodgequeue, 1)
