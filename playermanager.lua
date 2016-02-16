@@ -27,8 +27,6 @@ function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 	playermanager.players = {}
 
 	for i = 1, #inputs do
-		print(#inputs)
-		--print(playermanager.players[i])
 		playermanager.players[i] = player:new(playermanager.homePositions[i]:clone(), inputs[i], math.pi, colors.BLIMP_COLORS[i])
 		playermanager.active = false
 	end
@@ -47,7 +45,6 @@ function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 
 	-- set AIs ready automatically
 	for i,p in pairs(playermanager.players) do
-		print(p.active)
 		if p.ai ~= nil then
 			playermanager.wantsJoin(p)
 		end

@@ -107,7 +107,6 @@ function player:hit(bullet, dt)
 		for j = 1, deadvec[i] do
 			local color = nil
 			if i > 8 then color = colors.BLIMP_COLOR_SUB else color = self.mainColor end
-			if i > 8 then print(unpack(color)) end
 			local y = self.pos.y-8+i
 			local x = self.pos.x-(j-1)
 			local x2 = self.pos.x+j-1

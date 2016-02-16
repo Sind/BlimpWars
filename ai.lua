@@ -6,6 +6,8 @@ function ai:init(playerObject, inputObject)
 	self.shotTimer = 0
 	self.player = playerObject
 	self.input = inputObject
+	self.dodgequeue = {}
+	self.dodgeTimeout = 0
 	--playermanager.wantsJoin(self)
 end
 
@@ -19,6 +21,7 @@ end
 function ai:update(dt)
 	self.timer = self.timer + dt
 	self.shotTimer = self.shotTimer + dt
+	self.dodgeTimeout = self.dodgeTimeout - dt
 	if self.timer > 1.0 then
 		self.timer = 0
 		self.input.movementDirections.up = util.randomBool(0.85)
@@ -56,11 +59,15 @@ function ai:update(dt)
 	 self.input.movementDirections.up = false
 		end
 		-- when shooting straight up, simply doge to the right.
-		if math.abs(self.input.aimDirection.x) < 0.01 then
-			if self.player.pos.x < 108/2 then
-				self.input.movementDirections.right = true
-			else
-				self.input.movementDirections.left = true
+		if math.abs(self.input.aimDirection.x) < 0.1 and self.dodgeTimeout < 0 then
+			print("initiating emergency dodge!")
+			self.dodgeTimout = 2
+			for i = 1,20 do -- dodge for N frames
+				if self.player.pos.x < 192/2 then
+					table.insert(self.dodgequeue, 1)
+				else
+					table.insert(self.dodgequeue, 2)
+				end
 			end
 		end
 	else
@@ -68,4 +75,16 @@ function ai:update(dt)
 	end
 	--local angle = ai.targetCoordinates(192/2 - self.player.pos.x, 108/2 + self.player.pos.y)
 	--self.input.aimDirection = vec2(math.cos(angle), math.sin(angle))
+
+	-- perform an emergency dodge
+	if #self.dodgequeue ~= 0 then
+		local action = table.remove(self.dodgequeue, 1)
+		if action == 1 then
+			self.input.movementDirections.right = true
+		elseif action == 2 then
+			self.input.movementDirections.left = true
+		else
+			self.input.movementDirections.up = true
+		end
+	end
 end

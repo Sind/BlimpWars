@@ -30,7 +30,7 @@ function background.update(dt)
 			local value = math.random(0, 255)
 			background.sunDistortVector:setPixel(x, 0, value, 0, 0, 0)
 		end
-		background.sunTimer = background.sunTimer + 0.1
+		background.sunTimer = background.sunTimer + 0.15
 	end
 end
 
