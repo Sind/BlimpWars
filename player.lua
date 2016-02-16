@@ -41,13 +41,13 @@ function player:update(dt)
 	-- 	self.pos.y = self.pos.y + dt*50
 	-- end
 
-	if self.input:getMovementDirections().left then
+	if self.input:getMovementDirections().up then
 		self.pos.y = self.pos.y - dt*66
 	end
-	if self.input:getMovementDirections().right then
+	if self.input:getMovementDirections().left then
 		self.pos.x = self.pos.x - dt*50 * (1.0 - self.charge*0.5)
 	end
-	if self.input:getMovementDirections().up then
+	if self.input:getMovementDirections().right then
 		self.pos.x = self.pos.x + dt*50 * (1.0 - self.charge*0.5)
 	end
 	self.pos.x = math.min(192,math.max(0,self.pos.x))

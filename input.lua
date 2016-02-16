@@ -27,3 +27,41 @@ function inputDummy:getFire()
 end
 
 function inputDummy:vibrate(boolean) end
+
+inputGamepad = class()
+
+function inputGamepad:init( joystick )
+   self.timer = 0
+   self.movementDirections = {up=false, left=false, right=false}
+   self.aimDirection = vec2(0, 1)
+   self.firing = false
+   self.isDummyInput = false
+   self.joystick = joystick
+end
+
+JOYSTICK_CUTOFF = 0.5
+function inputGamepad:update(dt)
+   local anglevec = vec2(self.joystick:getAxis(4),-self.joystick:getAxis(5))
+   self.aimDirection = anglevec
+
+   local firebutton =  self.joystick:getAxis(6) > JOYSTICK_CUTOFF or self.joystick:isDown(5,6)
+   self.firing = firebutton
+
+   self.movementDirections.right = self.joystick:getAxis(1) > JOYSTICK_CUTOFF
+   self.movementDirections.left = self.joystick:getAxis(1) < - JOYSTICK_CUTOFF
+   self.movementDirections.up = self.joystick:getAxis(2)  < -  JOYSTICK_CUTOFF
+end
+
+function inputGamepad:getMovementDirections()
+   return self.movementDirections
+end
+
+function inputGamepad:getAimDirection()
+   return self.aimDirection
+end
+
+function inputGamepad:getFire()
+   return self.firing
+end
+
+function inputGamepad:vibrate(boolean) end

@@ -45,7 +45,7 @@ function ai:update(dt)
 	 self.input.movementDirections.right = true
 		end
 	else
-		print("found no player to target")
+		--print("found no player to target")
 	end
 
 end

@@ -13,7 +13,7 @@ require "modes/credits"
 screenshake = require "screenshake"
 vec2 = require "vector"
 
-FAKE_INPUTS = true -- set to true to fake inputs
+ADD_AI_OPPONENTS = true -- when set to true, the game will be filled up with AI opponents.
 
 -- TODO: mode transitions should really be managed by some sort of
 -- TODO: state-manager so that we can have automatic mode:onEnter(),
@@ -24,8 +24,8 @@ FAKE_INPUTS = true -- set to true to fake inputs
 modes = {}
 currentMode = nil
 mainCanvas = nil
-connectedInputs = {}
 scaleFactor = 1
+connectedInputs = {}
 
 function love.load(args)
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
@@ -49,9 +49,16 @@ function initialize()
 	mainCanvas = love.graphics.newCanvas(192, 108)
 	mainCanvas:setWrap("clamp","clamp")
 
-	-- TODO: Joystick handling needs a redo, probably
-	if FAKE_INPUTS then
-		for i = 1,4 do
+	-- TODO: check what happens with #connectedInputs < 4
+	local joysticks = love.joystick.getJoysticks()
+	for i = 1,#joysticks do
+		print("Inserted player")
+		table.insert(connectedInputs, inputGamepad:new(joysticks[i]))
+	end
+	if ADD_AI_OPPONENTS then
+		local opponentsToAdd = 4 - #joysticks
+		print("Adding " .. tostring(opponentsToAdd) .. " AI opponents.")
+		for i = 1,opponentsToAdd do
 			table.insert(connectedInputs, inputDummy:new())
 		end
 	else
