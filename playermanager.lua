@@ -26,8 +26,9 @@ function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 	}
 	playermanager.players = {}
 
-	-- we always generate a full set of four players at the bottom, even if fewer gamepads are connected.
-	for i = 1, 4 do
+	for i = 1, #inputs do
+		print(#inputs)
+		--print(playermanager.players[i])
 		playermanager.players[i] = player:new(playermanager.homePositions[i]:clone(), inputs[i], math.pi, colors.BLIMP_COLORS[i])
 		playermanager.active = false
 	end
@@ -43,6 +44,14 @@ function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 		{circle(0), circle(-math.pi/2), circle(2*math.pi/2)},
 		{vec2(cX + rX, cY + rY), vec2(cX - rX, cY + rY), vec2(cX - rX, cY - rY), vec2(cX + rX, cY - rY)}
 	}
+
+	-- set AIs ready automatically
+	for i,p in pairs(playermanager.players) do
+		print(p.active)
+		if p.ai ~= nil then
+			playermanager.wantsJoin(p)
+		end
+	end
 end
 
 function playermanager.drawPlayers(drawInactives)
@@ -62,13 +71,19 @@ function playermanager.updatePlayers(dt, updateInactives)
 end
 
 function playermanager.wantsJoin(player)
+	if player.active then print("player already joined."); return end
+	player.active = true
+	playermanager._movePlayersToAssignedPositions()
+end
+
+function playermanager.wantsJoinId(player)
 	if playermanager.players[player].active then print("player " .. tostring(player) .. " already joined."); return end
 	playermanager.players[player].active = true
 
 	playermanager._movePlayersToAssignedPositions()
 end
 
-function playermanager.wantsLeave(player)
+function playermanager.wantsLeaveId(player)
 	if not playermanager.players[player].active then print("player " .. tostring(player) .. " already inactive."); return end
 	playermanager.players[player].active = false
 

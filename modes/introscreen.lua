@@ -21,9 +21,10 @@ end
 function introscreen.keypressed(key)
 	if key == "1" or key == "2" or key == "3" or key == "4" then
 		if love.keyboard.isDown("lshift") then
-			playermanager.wantsLeave(tonumber(key))
+			-- TODO: once gamepads and players are associated, probably don't use byId here?
+			playermanager.wantsLeaveId(tonumber(key))
 		else
-			playermanager.wantsJoin(tonumber(key))
+			playermanager.wantsJoinId(tonumber(key))
 		end
 	end
 	if key == "return" then

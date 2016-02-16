@@ -6,12 +6,20 @@ function ai:init(playerObject, inputObject)
 	self.shotTimer = 0
 	self.player = playerObject
 	self.input = inputObject
+	--playermanager.wantsJoin(self)
+end
+
+-- target coordinates. self must already be at (0, 0).
+function ai.targetCoordinates(x, y)
+	local GRAVITY = 100
+	local v = 1.2
+	return math.atan(v^2 + math.sqrt(v^4 - GRAVITY*(GRAVITY*x^2 + 2*y*v^2))/(GRAVITY*x))
 end
 
 function ai:update(dt)
 	self.timer = self.timer + dt
 	self.shotTimer = self.shotTimer + dt
-	if self.timer > 0.5 then
+	if self.timer > 1.0 then
 		self.timer = 0
 		self.input.movementDirections.up = util.randomBool(0.85)
 		self.input.movementDirections.left = util.randomBool(0.5)
@@ -19,16 +27,23 @@ function ai:update(dt)
 		---self.input.firing = util.randomBool(0.3)
 	end
 	self.input.firing = true
-	if self.shotTimer > 1.3 then
+	if self.shotTimer > 1.0 then
 		self.shotTimer = 0
 		self.input.firing = false
 	end
 	local targetedPlayerDistance = 1/0
 	local targetedPlayerPosition = nil;
 	for i, p in ipairs(playermanager.players) do
-		if p.active and not p.dead and p.pos.dist(p.pos, self.player.pos) < targetedPlayerDistance and p ~= self.player then
-			targetedPlayerDistance = p.pos.dist(p.pos, self.player.pos)
-			targetedPlayerPosition = p.pos:clone()
+		if p.active and not p.dead and p ~= self.player then
+			if not p.ai then
+				targetedPlayerDistance = p.pos.dist(p.pos, self.player.pos)
+				targetedPlayerPosition = p.pos:clone()
+				break
+			end
+			if p.pos.dist(p.pos, self.player.pos) < targetedPlayerDistance and p ~= self.player then
+				targetedPlayerDistance = p.pos.dist(p.pos, self.player.pos)
+				targetedPlayerPosition = p.pos:clone()
+			end
 		end
 	end
 	if targetedPlayerPosition then
@@ -42,10 +57,15 @@ function ai:update(dt)
 		end
 		-- when shooting straight up, simply doge to the right.
 		if math.abs(self.input.aimDirection.x) < 0.01 then
-	 self.input.movementDirections.right = true
+			if self.player.pos.x < 108/2 then
+				self.input.movementDirections.right = true
+			else
+				self.input.movementDirections.left = true
+			end
 		end
 	else
 		--print("found no player to target")
 	end
-
+	--local angle = ai.targetCoordinates(192/2 - self.player.pos.x, 108/2 + self.player.pos.y)
+	--self.input.aimDirection = vec2(math.cos(angle), math.sin(angle))
 end

@@ -46,6 +46,8 @@ end
 
 function initialize()
 	-- everything will be rendered to this canvas, which is then rendered upscaled to the screen.
+	connectedInputs = {}
+
 	mainCanvas = love.graphics.newCanvas(192, 108)
 	mainCanvas:setWrap("clamp","clamp")
 
@@ -111,7 +113,6 @@ function love.draw()
 	screenshake:start()
 	love.graphics.draw(mainCanvas, 0, 0, 0, scaleFactor, scaleFactor)
 	screenshake:stop()
-
 end
 
 function love.keypressed(key)
@@ -126,5 +127,8 @@ function love.keypressed(key)
 end
 
 function love.joystickpressed(js,key)
-	if key == 8 then initialize() end
+	if key == 8 then
+		currentMode = "introscreen"
+		initialize()
+	end
 end
