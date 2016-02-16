@@ -1,4 +1,4 @@
-xcredits = {
+credits = {
 	simulationtime = 0
 }
 

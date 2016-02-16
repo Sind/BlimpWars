@@ -48,6 +48,7 @@ function introscreen._transitionToGameMode()
 		p.autoAim = false
 	end
 	currentMode = "game"
+	game.enter()
 end
 
 function introscreen._transitionToCredits()

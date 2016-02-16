@@ -11,6 +11,10 @@ function game.load()
 
 end
 
+function game.enter()
+	game.bullets = {}
+end
+
 function game.update(dt)
 	game.simulationtime = game.simulationtime + dt
 	game.accumulator = game.accumulator + dt
