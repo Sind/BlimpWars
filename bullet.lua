@@ -11,7 +11,7 @@ function bullet:init(start, velocity, isConfetti, color)
 end
 
 function bullet:update(dt)
-	tick("bullet update")
+	--tick("bullet update")
 	self.time = self.time + dt
 	self.vel.y = self.vel.y + GRAVITY*dt
 	self.pos = self.pos + self.vel *dt
@@ -33,7 +33,7 @@ function bullet:update(dt)
 			end
 		end
 	end
-	tock("bullet update", 0.5)
+	--tock("bullet update", 0.5)
 end
 
 function bullet:draw()
