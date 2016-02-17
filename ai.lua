@@ -32,7 +32,7 @@ function ai:update(dt)
 		self.shotTimer = 0
 		self.input.firing = false
 		if math.abs(self.input.aimDirection.x) < 0.1 then
-			print("initiating emergency dodge!")
+			--print("initiating emergency dodge!")
 			for i = 1,120 do -- dodge for N frames
 				if self.player.pos.x < 192/2 then
 					table.insert(self.dodgequeue, 1)
@@ -77,7 +77,7 @@ function ai:update(dt)
 		if math.abs(dotProd - 1) < 0.1 then
 			for i = 1,5 do
 				table.insert(self.dodgequeue, 2)
-				print("bullet dodge")
+				--print("bullet dodge")
 			end
 		end
 	end
