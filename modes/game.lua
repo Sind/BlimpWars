@@ -24,11 +24,9 @@ function game.update(dt)
 		game.accumulator = game.accumulator - FRAME_SPEED
 		playermanager.updatePlayers(FRAME_SPEED)
 		tick("updating all game.bullets")
-		if #game.bullets ~= 0 then -- put this into a bulletmanager or sth
-			for i = #game.bullets,1,-1 do
-				local b = game.bullets[i]
-				if b:update(FRAME_SPEED) then table.remove(game.bullets,i) end
-			end
+		for i = #game.bullets,1,-1 do
+			local b = game.bullets[i]
+			if b:update(FRAME_SPEED) then table.remove(game.bullets,i) end
 		end
 		tock("updating all game.bullets", 2)
 	end
