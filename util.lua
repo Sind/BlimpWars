@@ -1,4 +1,5 @@
 util = {}
+-- some utilities. Most are taken from the lume library.
 
 -- deep-copies a table
 function util.deepcopy(orig)
@@ -136,6 +137,14 @@ function util.reduce(t, fn, first)
 	end
 	assert(started, "reduce of an empty table with no first value")
 	return acc
+end
+
+function util.find(t, value)
+  local iter = getiter(t)
+  for k, v in iter(t) do
+    if v == value then return k end
+  end
+  return nil
 end
 
 return util

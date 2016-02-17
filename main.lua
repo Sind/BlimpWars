@@ -30,8 +30,8 @@ connectedInputs = {}
 function love.load(args)
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
 	love.graphics.setDefaultFilter("nearest","nearest")
-	--love.window.setMode(1920, 1080, {fullscreen = true})
-	love.window.setMode(3200, 1800, {fullscreen = true})
+	love.window.setMode(1920, 1080, {fullscreen = true})
+	--love.window.setMode(3200, 1800, {fullscreen = true})
 	scaleFactor = love.graphics.getWidth()/192
 
 	if (#args) > 1 then
@@ -126,9 +126,38 @@ function love.keypressed(key)
 	end
 end
 
-function love.joystickpressed(js,key)
-	if key == 8 then
+function love.joystickpressed(js, key)
+	-- TODO: should this be mapped to the user?
+	if key == 9 then
 		currentMode = "introscreen"
 		initialize()
 	end
+	if key == 8 then
+		-- TODO: this is ugly. Should probably be refactored so that
+		-- TODO: gamemodes receive semantic information rather than raw
+		-- TODO: unmapped keypresses etc.
+		modes[currentMode].keypressed("return")
+	end
+
+	-- TODO: this is badly decoupled. main.lua should not ever
+	-- TODO: call playermanager.wantsJoin(p), instead the event
+	-- TODO: should just be passed on to the active game mode,
+	-- TODO: which can then decide what to do with it.
+	if key == 1 and currentMode == "introscreen" then
+		-- a player wants to join; look up which player it is
+		for i, p in ipairs(playermanager.players) do
+			if p.input.joystick == js then
+				playermanager.wantsJoin(p)
+			end
+		end
+	end
+	if (key == 2 or key == 3) and currentMode == "introscreen" then
+		-- a player wants to join; look up which player it is
+		for i, p in ipairs(playermanager.players) do
+			if p.input.joystick == js then
+				playermanager.wantsLeave(p)
+			end
+		end
+	end
+	print(key)
 end

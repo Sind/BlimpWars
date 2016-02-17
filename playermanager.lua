@@ -91,6 +91,19 @@ function playermanager.wantsLeaveId(player)
 	playermanager._movePlayersToAssignedPositions()
 end
 
+function playermanager.wantsLeave(player)
+	if not player.active then print("player already inactive."); return end
+	player.active = false
+
+	local id = util.find(playermanager.players, player)
+
+	-- move the player that left to its home-position
+	playermanager._move(0.5, player.pos, playermanager.homePositions[id]:clone(), "outCirc")
+
+	-- reshuffle the rest of the players accordingly
+	playermanager._movePlayersToAssignedPositions()
+end
+
 function playermanager._movePlayersToAssignedPositions()
 	local numActives = 0
 	local activePositions = {}
