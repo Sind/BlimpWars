@@ -14,6 +14,7 @@ screenshake = require "screenshake"
 vec2 = require "vector"
 
 ADD_AI_OPPONENTS = true -- when set to true, the game will be filled up with AI opponents.
+IDLE_TIMEOUT_SECONDS = 45
 
 -- TODO: mode transitions should really be managed by some sort of
 -- TODO: state-manager so that we can have automatic mode:onEnter(),
@@ -27,6 +28,9 @@ mainCanvas = nil
 scaleFactor = 1
 connectedInputs = {}
 
+lastInputReceivedTimestamp = -2
+lastIdleReset = -1
+
 function love.load(args)
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
 	love.graphics.setDefaultFilter("nearest","nearest")
@@ -37,6 +41,9 @@ function love.load(args)
 	if (#args) > 1 then
 		currentMode = args[2]
 	end
+
+	lastIdleReset = love.timer.getTime()
+	lastInputReceivedTimestamp = love.timer.getTime() - 1
 
 	-- Most of the love.load is factored into the initialize()
 	-- function, so that we can call initialize() to restart
@@ -99,6 +106,13 @@ function love.update(dt)
 	for _, input in ipairs(connectedInputs) do
 		input:update(dt)
 	end
+	local now = love.timer.getTime()
+	if (now > lastInputReceivedTimestamp + IDLE_TIMEOUT_SECONDS) and (lastIdleReset < lastInputReceivedTimestamp) then
+		lastIdleReset = love.timer.getTime()
+		print(lastInputReceivedTimestamp)
+		currentMode = "introscreen"
+		initialize()
+	end
 end
 
 function love.draw()
@@ -124,9 +138,11 @@ function love.keypressed(key)
 	else
 		modes[currentMode].keypressed(key)
 	end
+	lastInputReceivedTimestamp = love.timer.getTime()
 end
 
 function love.joystickpressed(js, key)
+	lastInputReceivedTimestamp = love.timer.getTime()
 	-- TODO: should this be mapped to the user?
 	if key == 9 then
 		currentMode = "introscreen"

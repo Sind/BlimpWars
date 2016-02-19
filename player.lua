@@ -63,8 +63,8 @@ function player:update(dt)
 	else
 		if self.charge > 0.25 then
 			local pos = self.pos + vec2(9,0):rotated(self.cannon)
-			local b = bullet:new(pos,vec2(self.charge*BULLET_FORCE*math.cos(self.cannon),self.charge*BULLET_FORCE*math.sin(self.cannon)))
-			table.insert(game.bullets,b)
+			local b = bullet:new(pos,vec2(self.charge*BULLET_FORCE*math.cos(self.cannon), self.charge*BULLET_FORCE*math.sin(self.cannon)), false, nil, self)
+			table.insert(game.bullets, b)
 		end
 		self.charge = 0
 	end

@@ -46,7 +46,7 @@ function introscreen.keypressed(key)
 			playermanager.wantsJoinId(tonumber(key))
 		end
 	end
-	if key == "return" then
+	if key == "return" and not introscreen.isTransitioning then
 		if playermanager.getNumActivePlayers() < 2 then
 			print("too few active players: ", playermanager.getNumActivePlayers())
 			-- TODO: indicate to the user somehow

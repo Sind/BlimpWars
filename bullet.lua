@@ -1,13 +1,14 @@
 require "timer"
 bullet = class()
 GRAVITY = 100
-function bullet:init(start, velocity, isConfetti, color)
+function bullet:init(start, velocity, isConfetti, color, shooter)
 	self.pos = start:clone()
 	self.vel = velocity
 	self.time = 0
 	self.radius = 1
 	self.confetti = isConfetti
-	self.color = color or (isConfetti and BLIMP_COLOR_MAIN or colors.BULLET_COLOR)
+	self.shooter = shooter
+	self.color = color or (isConfetti and colors.BLIMP_COLOR_MAIN or colors.BULLET_COLOR)
 end
 
 function bullet:update(dt)
@@ -23,10 +24,11 @@ function bullet:update(dt)
 
 
 	if self.confetti then return false end
-	if self.time > 0.15 then
+	--if self.time > 0.15 then
 		-- TODO: should this be more decoupled so that collisions are checked in playermanager or so?
-		for i,v in ipairs(playermanager.players) do
-			if not v.dead and v.active and isColliding(v,self) then
+	for i,v in ipairs(playermanager.players) do
+		if not v.dead and v.active and isColliding(v,self) then
+			if not (v == self.shooter and self.time < 0.25) then
 				v:hit(self,dt)
 				screenshake(25,0.7)
 				return true
