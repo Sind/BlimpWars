@@ -60,12 +60,12 @@ function initialize()
 
 	-- TODO: check what happens with #connectedInputs < 4
 	local joysticks = love.joystick.getJoysticks()
-	for i = 1,math.max(#joysticks, 4) do
+	for i = 1, math.min(#joysticks, 4) do
 		print("Inserted player")
 		table.insert(connectedInputs, inputGamepad:new(joysticks[i]))
 	end
 	if ADD_AI_OPPONENTS then
-		local opponentsToAdd = 4 - math.max(#joysticks, 4)
+		local opponentsToAdd = 4 - math.min(#joysticks, 4)
 		print("Adding " .. tostring(opponentsToAdd) .. " AI opponents.")
 		for i = 1,opponentsToAdd do
 			table.insert(connectedInputs, inputDummy:new())
