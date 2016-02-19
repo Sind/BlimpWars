@@ -107,7 +107,7 @@ function love.update(dt)
 		input:update(dt)
 	end
 	local now = love.timer.getTime()
-	if (now > lastInputReceivedTimestamp + IDLE_TIMEOUT_SECONDS) and (lastIdleReset < lastInputReceivedTimestamp) then
+	if (now > lastInputReceivedTimestamp + IDLE_TIMEOUT_SECONDS) and (lastIdleReset < lastInputReceivedTimestamp) and not ADD_AI_OPPONENTS then
 		lastIdleReset = love.timer.getTime()
 		print(lastInputReceivedTimestamp)
 		currentMode = "introscreen"
