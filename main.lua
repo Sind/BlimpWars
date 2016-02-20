@@ -1,5 +1,6 @@
 require "strict"
 require "class"
+require "util"
 require "blimp"
 require "bullet"
 require "playermanager"
@@ -27,6 +28,13 @@ currentMode = nil
 mainCanvas = nil
 scaleFactor = 1
 connectedInputs = {}
+
+-- NOTE: This variable carries information over several game-rounds, such as who won
+-- NOTE: how many times, who was in ready/unready state, etc.
+-- NOTE: This variable should not be reset by initialize(), since we're interested
+-- NOTE: in preserving its value across game resets. It should explicitly be reset on
+-- NOTE: idle-resets and perhaps after a certain number of rounds.
+roundStates = {}
 
 lastInputReceivedTimestamp = -2
 lastIdleReset = -1
@@ -92,6 +100,7 @@ function initialize()
 	modes["credits"] = credits
 	-- mode the game boots into by default, overridden by commandline
 	if not currentMode then currentMode = "introscreen" end
+
 	collectgarbage()
 end
 
@@ -107,10 +116,13 @@ function love.update(dt)
 		input:update(dt)
 	end
 	local now = love.timer.getTime()
+
+	-- Idle-reset timer
 	if (now > lastInputReceivedTimestamp + IDLE_TIMEOUT_SECONDS) and (lastIdleReset < lastInputReceivedTimestamp) and not ADD_AI_OPPONENTS then
 		lastIdleReset = love.timer.getTime()
-		print(lastInputReceivedTimestamp)
 		currentMode = "introscreen"
+		-- the roundStates variable is normally preserved across resets -- reset it explicitly.
+		roundStates = {}
 		initialize()
 	end
 end

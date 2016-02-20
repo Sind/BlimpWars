@@ -8,6 +8,13 @@ introscreen = {
 function introscreen.load()
 	introscreen.logo = love.graphics.newImage("blimpwars-logo.png")
 	introscreen.buttontext = love.graphics.newImage("join-start-text.png")
+
+	if roundStates.actives then
+		for i, p in ipairs(roundStates.actives) do
+			print("setting player", p, "auto-active, since player participated in last round.")
+			playermanager.wantsJoinId(p)
+		end
+	end
 end
 
 function introscreen.update(dt)
@@ -47,6 +54,16 @@ function introscreen.keypressed(key)
 		end
 	end
 	if key == "return" and not introscreen.isTransitioning then
+		-- NOTE: read the warning about the special semantics of the
+		-- NOTE: roundStates variable in main.lua!
+		local actives = {}
+		for i, p in ipairs(playermanager.players) do
+			if p.active then
+				table.insert(actives, i)
+			end
+		end
+		roundStates["actives"] = actives
+
 		if playermanager.getNumActivePlayers() < 2 then
 			print("too few active players: ", playermanager.getNumActivePlayers())
 			-- TODO: indicate to the user somehow
