@@ -6,13 +6,11 @@ colors = {
 	BACKGROUND_COLOR = {82, 12, 4},
 	SUN_COLOR = {254, 150, 15},
 	WATER_COLOR = {0, 5, 50, 50},
-
+	-- #621b4c
 	BLIMP_COLORS = {
-		{128, 0, 0},
-		{85, 29, 0},
-		{105, 22, 0},
-		{95, 0, 33},
-		{141, 63, 7},
-		{141, 94, 7}
+		util.color("#621b4c"),
+		util.color("#80000d"),
+		util.color("#8d2f00"),
+		util.color("#6e4a15")
 	}
 }
