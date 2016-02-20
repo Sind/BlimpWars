@@ -155,11 +155,6 @@ end
 
 function love.joystickpressed(js, key)
 	lastInputReceivedTimestamp = love.timer.getTime()
-	-- TODO: should this be mapped to the user?
-	if key == 9 then
-		currentMode = "introscreen"
-		initialize()
-	end
 	if key == 8 then
 		-- TODO: this is ugly. Should probably be refactored so that
 		-- TODO: gamemodes receive semantic information rather than raw
@@ -187,5 +182,4 @@ function love.joystickpressed(js, key)
 			end
 		end
 	end
-	print(key)
 end

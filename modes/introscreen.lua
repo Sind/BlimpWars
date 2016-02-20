@@ -22,7 +22,6 @@ function introscreen.update(dt)
 	playermanager.update(dt, true)
 	if introscreen.isTransitioning then
 		for i = #introscreen.transitionAnimations,1,-1 do
-			print("updating")
 			local res = introscreen.transitionAnimations[i]:update(dt)
 			if res then
 				table.remove(introscreen.transitionAnimations, i)

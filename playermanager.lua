@@ -162,6 +162,7 @@ function playermanager.getNumActivePlayers()
 end
 
 function playermanager.findBestAssignment(currentObjectPositions, slotPositions)
+	-- TODO: we really only need dist^2 here.
 	local dist = function(a, b) return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2) end -- TODO: does vec already do this for us?
 	local scoreAssignment = function(assignment)
 		local acc = 0
