@@ -23,6 +23,7 @@ function game.load()
 	game.winnerTextOffset = -10
 	game.winner = nil
 	game.playAgainImage = love.graphics.newImage("restart.png")
+	collectgarbage()
 end
 
 function game.enter()
@@ -54,7 +55,7 @@ function game.update(dt)
 		game.gameOver = true
 		game.gameOverTimeout = game.simulationtime
 	end
-	if (game.gameOverTimeout + 2 < game.simulationtime) and not game.trueGameOver and game.gameOver then
+	if (game.gameOverTimeout + 1.5 < game.simulationtime) and not game.trueGameOver and game.gameOver then
 		game.trueGameOver = true
 		game._determineWinner()
 		game.gameOverAnimation = tween.new(0.5, game, {winnerTextOffset = 108.0/2}, "outBounce")

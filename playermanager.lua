@@ -13,6 +13,8 @@ playermanager.homePositions = nil;
 playermanager.statePositions = nil;
 -- player data
 playermanager.players = nil;
+-- down-pointing green arrow
+playermanager.arrow = love.graphics.newImage("arrow.png")
 
 function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 	local maxWidth = windowWidth*0.8
@@ -57,6 +59,14 @@ function playermanager.drawPlayers(drawInactives)
 			v:draw()
 		end
 	end
+	-- Draw arrows below blimps in intro-screen
+	if drawInactives then
+		for i, p in ipairs(playermanager.players) do
+			if not p.active then
+				love.graphics.draw(playermanager.arrow, p.pos.x - 4, 103 + math.sin(love.timer.getTime()*10))
+			end
+		end
+	end
 end
 
 function playermanager.updatePlayers(dt, updateInactives)
@@ -70,14 +80,19 @@ end
 function playermanager.wantsJoin(player)
 	if player.active then print("player already joined."); return end
 	player.active = true
-	playermanager._movePlayersToAssignedPositions()
+
+	local id = util.find(playermanager.players, player)
+	playermanager._move(0.5, player.pos, playermanager.homePositions[id]:clone() - vec2(0, 10), "outCirc")
+	--playermanager._movePlayersToAssignedPositions()
 end
 
 function playermanager.wantsJoinId(player)
 	if playermanager.players[player].active then print("player " .. tostring(player) .. " already joined."); return end
 	playermanager.players[player].active = true
 
-	playermanager._movePlayersToAssignedPositions()
+	playermanager._move(0.5, playermanager.players[player].pos, playermanager.homePositions[player]:clone() - vec2(0, 10), "outCirc")
+
+	--playermanager._movePlayersToAssignedPositions()
 end
 
 function playermanager.wantsLeaveId(player)
@@ -88,7 +103,7 @@ function playermanager.wantsLeaveId(player)
 	playermanager._move(0.5, playermanager.players[player].pos, playermanager.homePositions[player]:clone(), "outCirc")
 
 	-- reshuffle the rest of the players accordingly
-	playermanager._movePlayersToAssignedPositions()
+	--playermanager._movePlayersToAssignedPositions()
 end
 
 function playermanager.wantsLeave(player)
@@ -101,10 +116,10 @@ function playermanager.wantsLeave(player)
 	playermanager._move(0.5, player.pos, playermanager.homePositions[id]:clone(), "outCirc")
 
 	-- reshuffle the rest of the players accordingly
-	playermanager._movePlayersToAssignedPositions()
+	--playermanager._movePlayersToAssignedPositions()
 end
 
-function playermanager._movePlayersToAssignedPositions()
+function playermanager.movePlayersToAssignedPositions()
 	local numActives = 0
 	local activePositions = {}
 	for i, v in ipairs(playermanager.players) do

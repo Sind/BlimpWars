@@ -5,7 +5,7 @@ introscreen = {
 	bannerOffset = 0,
 	notificationAnimation = nil,
 	notificationImage = nil,
-	notificationOffset = -10
+	notificationOffset = -10,
 }
 
 function introscreen.load()
@@ -25,6 +25,7 @@ function introscreen.load()
 			playermanager.wantsJoinId(p)
 		end
 	end
+	collectgarbage()
 end
 
 function introscreen.update(dt)
@@ -55,9 +56,10 @@ end
 function introscreen.draw()
 	playermanager.drawPlayers(true)
 	love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2,
-					108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2) + introscreen.bannerOffset)
-	love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2, 108/2 - introscreen.buttontext:getHeight()/2
-						   + 13 + 4.8*math.sin(introscreen.simulationtime/2 + 0.8) + introscreen.bannerOffset)
+					   108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2) + introscreen.bannerOffset)
+	love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2,
+					   108/2 - introscreen.buttontext:getHeight()/2
+						   + 13 + math.min(4.8*math.sin(introscreen.simulationtime/2 + 0.8), 3) + introscreen.bannerOffset)
 	if introscreen.notificationAnimation then
 		love.graphics.draw(introscreen.notificationImage,
 						   192/2 - introscreen.notificationImage:getWidth()/2,
@@ -88,11 +90,12 @@ function introscreen.keypressed(key)
 		if playermanager.getNumActivePlayers() < 2 then
 			print("too few active players: ", playermanager.getNumActivePlayers())
 			if not introscreen.notificationAnimation then
-				introscreen.notificationAnimation = tween.new(2, introscreen, {notificationOffset = 108 + 80}, "outInBack")
+				introscreen.notificationAnimation = tween.new(1.5, introscreen, {notificationOffset = 108 + 80}, "outInExpo")
 			end
 			return
 		end
 		introscreen.isTransitioning = true
+		playermanager.movePlayersToAssignedPositions()
 		table.insert(introscreen.transitionAnimations, tween.new(1, introscreen, {bannerOffset = -100}, "inOutBack"))
 		for i, p in ipairs(playermanager.players) do
 			if not p.active then
