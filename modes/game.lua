@@ -51,7 +51,6 @@ function game.update(dt)
 		end
 	end
 	if (not game.gameOver) and (numAlive <= 1) then
-		print("one or zero players left.")
 		game.gameOver = true
 		game.gameOverTimeout = game.simulationtime
 	end

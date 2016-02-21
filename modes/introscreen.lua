@@ -2,12 +2,22 @@ introscreen = {
 	simulationtime = 0,
 	transitionAnimations = {},
 	isTransitioning = false,
-	bannerOffset = 0
+	bannerOffset = 0,
+	notificationAnimation = nil,
+	notificationImage = nil,
+	notificationOffset = -10
 }
 
 function introscreen.load()
+	introscreen.simulationtime = 0
+	introscreen.transitionAnimations = {}
+	introscreen.isTransitioning = false
+	introscreen.bannerOffset = 0
+	introscreen.notificationAnimation = nil
 	introscreen.logo = love.graphics.newImage("blimpwars-logo.png")
 	introscreen.buttontext = love.graphics.newImage("join-start-text.png")
+	introscreen.notificationImage = love.graphics.newImage("need-more-players.png")
+	introscreen.notificationOffset = -10
 
 	if roundStates.actives then
 		for i, p in ipairs(roundStates.actives) do
@@ -33,6 +43,13 @@ function introscreen.update(dt)
 			introscreen._transitionToGameMode()
 		end
 	end
+	if introscreen.notificationAnimation then
+		local done = introscreen.notificationAnimation:update(dt)
+		if done then
+			introscreen.notificationOffset = -10
+			introscreen.notificationAnimation = nil
+		end
+	end
 end
 
 function introscreen.draw()
@@ -40,7 +57,12 @@ function introscreen.draw()
 	love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2,
 					108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2) + introscreen.bannerOffset)
 	love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2, 108/2 - introscreen.buttontext:getHeight()/2
-						+ 13 + 4.8*math.sin(introscreen.simulationtime/2 + 0.8) + introscreen.bannerOffset)
+						   + 13 + 4.8*math.sin(introscreen.simulationtime/2 + 0.8) + introscreen.bannerOffset)
+	if introscreen.notificationAnimation then
+		love.graphics.draw(introscreen.notificationImage,
+						   192/2 - introscreen.notificationImage:getWidth()/2,
+						   introscreen.notificationOffset - introscreen.notificationImage:getHeight()/2)
+	end
 end
 
 function introscreen.keypressed(key)
@@ -65,7 +87,9 @@ function introscreen.keypressed(key)
 
 		if playermanager.getNumActivePlayers() < 2 then
 			print("too few active players: ", playermanager.getNumActivePlayers())
-			-- TODO: indicate to the user somehow
+			if not introscreen.notificationAnimation then
+				introscreen.notificationAnimation = tween.new(2, introscreen, {notificationOffset = 108 + 80}, "outInBack")
+			end
 			return
 		end
 		introscreen.isTransitioning = true
