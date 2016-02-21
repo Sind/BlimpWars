@@ -54,7 +54,7 @@ function introscreen.update(dt)
 end
 
 function introscreen.draw()
-	playermanager.drawPlayers(true)
+	playermanager.drawPlayers(true, not introscreen.isTransitioning)
 	love.graphics.draw(introscreen.logo, 192/2 - introscreen.logo:getWidth()/2,
 					   108/2 - introscreen.logo:getHeight()/2 - 8 + 4.8*math.sin(introscreen.simulationtime/2) + introscreen.bannerOffset)
 	love.graphics.draw(introscreen.buttontext, 192/2 - introscreen.buttontext:getWidth()/2,

@@ -53,14 +53,14 @@ function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 	end
 end
 
-function playermanager.drawPlayers(drawInactives)
+function playermanager.drawPlayers(drawInactives, drawArrows)
 	for k, v in ipairs(playermanager.players) do
 		if v.active or drawInactives then
 			v:draw()
 		end
 	end
 	-- Draw arrows below blimps in intro-screen
-	if drawInactives then
+	if drawInactives and drawArrows then
 		for i, p in ipairs(playermanager.players) do
 			if not p.active then
 				love.graphics.draw(playermanager.arrow, p.pos.x - 4, 103 + math.sin(love.timer.getTime()*10))
