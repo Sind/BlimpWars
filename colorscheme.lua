@@ -5,8 +5,7 @@ colors = {
 	BULLET_COLOR = {255, 255, 255},
 	BACKGROUND_COLOR = {82, 12, 4},
 	SUN_COLOR = {254, 150, 15},
-	WATER_COLOR = {0, 5, 50, 50},
-	-- #621b4c
+	WATER_COLOR = {0, 5, 50, 40},
 	BLIMP_COLORS = {
 		util.color("#621b4c"),
 		util.color("#80000d"),

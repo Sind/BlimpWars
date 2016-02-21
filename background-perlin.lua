@@ -1,37 +1,47 @@
 background = {}
 
+background.shaderSrc = [[
+float rand(vec2 n) {
+	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+float noise(vec2 p){
+	vec2 ip = floor(p);
+	vec2 u = fract(p);
+	u = u*u*(3.0-2.0*u);
+	float res = mix(
+		mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+		mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+	return res*res;
+}
+
+uniform float t;
+uniform Image background;
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+	if(screen_coords.y >= 80){
+		vec2 coords = screen_coords + vec2(0, -60);
+		float n2 = noise(coords/vec2(5.0, 1 - coords.y/800) - vec2(t - 7, t));
+		float n3 = noise(coords/vec2(5.0, 1 - coords.y/800) - vec2(t - 1, t + 3));
+		vec4 col = Texel(texture, texture_coords - vec2(0, n2*n3*0.16 - 0.008));
+		return col;
+	}
+	else {
+		return Texel(background, texture_coords);
+	}
+}]]
+
 function background.load(renderWidth, renderHeight)
-	print("using random noise shader")
-	--background.canvas = love.graphics.newCanvas(renderWidth, renderHeight)
+	print("using perlin noise shader")
 	background.circleCanvas = love.graphics.newCanvas(renderWidth, 80)
 	background.vignetteCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas:setWrap("clamp","clamp")
 	background.sunTimer = 0
-	background.sunDistortVector = love.image.newImageData(renderHeight, 1)
-	background.sunDistortVectorImg = love.graphics.newImage(background.sunDistortVector)
-	for x = 0,107 do -- TODO: magic number
-		background.sunDistortVector:setPixel(x, 0, 127, 0, 0, 0)
-	end
-	background.distortShader = love.graphics.newShader([[
-	extern Image distortVec;
-	vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
-		number distort = (Texel(distortVec, vec2(texture_coords.y, 0.0)).r - 0.5)/45.0;
-		return vec4(Texel(texture, vec2(texture_coords.x + distort, texture_coords.y)).rgb, 1.0);
-	}
-]])
+	background.distortShader = love.graphics.newShader(background.shaderSrc)
 	background.drawOnce()
 end
 
 function background.update(dt)
 	background.sunTimer = background.sunTimer - dt
-	if background.sunTimer < 0 then
-		for x = 80, 107 do -- TODO: magic number
-			local value = math.random(0, 255)
-			background.sunDistortVector:setPixel(x, 0, value, 0, 0, 0)
-		end
-		background.sunTimer = background.sunTimer + 0.15
-	end
 end
 
 function background.drawOnce()
@@ -61,18 +71,17 @@ function background.drawOnce()
 	love.graphics.setCanvas(background.backgroundCanvas)
 	love.graphics.draw(background.circleCanvas)
 	love.graphics.draw(background.circleCanvas, 0, 80, 0, 1, -0.35, 0, 80)
-	love.graphics.setColor(colors.WATER_COLOR)
-	love.graphics.rectangle("fill", 0, 80, 192, 108-80)
 	love.graphics.setCanvas()
 end
 
 function background.draw()
-	background.sunDistortVectorImg:refresh()
-	background.distortShader:send('distortVec', background.sunDistortVectorImg)
+	background.distortShader:send("t", background.sunTimer)
 	love.graphics.setColor(colors.WHITE)
 	love.graphics.setShader(background.distortShader)
 	love.graphics.draw(background.backgroundCanvas)
 	love.graphics.setShader()
+	love.graphics.setColor(colors.WATER_COLOR)
+	love.graphics.rectangle("fill", 0, 80, 192, 108-80)
 end
 
 return background
