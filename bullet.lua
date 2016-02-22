@@ -15,7 +15,7 @@ function bullet:update(dt)
 	--tick("bullet update")
 	self.time = self.time + dt
 	self.vel.y = self.vel.y + GRAVITY*dt
-	self.pos = self.pos + self.vel *dt
+	self.pos = self.pos + self.vel*dt
 	if self.pos.y > 110 then return true end
 	--if self.pos.y > 108 then self.pos.y = self.pos.y - 108 end
 	--if self.pos.y < 0 then self.pos.y = self.pos.y + 108 end
@@ -25,9 +25,9 @@ function bullet:update(dt)
 
 	if self.confetti then return false end
 	--if self.time > 0.15 then
-		-- TODO: should this be more decoupled so that collisions are checked in playermanager or so?
+	-- TODO: should this be more decoupled so that collisions are checked in playermanager or so?
 	for i,v in ipairs(playermanager.players) do
-		if not v.dead and v.active and isColliding(v,self) then
+		if not v.dead and v.active and isColliding2(v,self) then
 			if not (v == self.shooter and self.time < 0.25) then
 				v:hit(self,dt)
 				screenshake(25,0.7)
@@ -47,4 +47,9 @@ end
 function isColliding(a,b)
 	local dist = (a.pos - b.pos):len()
 	return a.radius + b.radius > dist
+end
+
+-- Optimization of isColliding(), not benchmarked yet.
+function isColliding2(a, b)
+	return (a.radius + b.radius)^2 > (a.pos.x - b.pos.x)^2 + (a.pos.y - b.pos.y)^2
 end

@@ -1,4 +1,6 @@
-background = {}
+background = {
+	sunTimer = 0
+}
 
 function background.load(renderWidth, renderHeight)
 	print("using perlin noise shader")
@@ -6,7 +8,6 @@ function background.load(renderWidth, renderHeight)
 	background.vignetteCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas:setWrap("clamp","clamp")
-	background.sunTimer = 0
 	background.distortShader = love.graphics.newShader("perlin-wave-shader.fsh")
 	background.distortShader:send("waterColor", colors.WATER_COLOR)
 	background.drawOnce()

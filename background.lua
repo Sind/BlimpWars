@@ -1,4 +1,6 @@
-background = {}
+background = {
+	sunTimer = 0
+}
 
 function background.load(renderWidth, renderHeight)
 	print("using random noise shader")
@@ -7,7 +9,6 @@ function background.load(renderWidth, renderHeight)
 	background.vignetteCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas:setWrap("clamp","clamp")
-	background.sunTimer = 0
 	background.sunDistortVector = love.image.newImageData(renderHeight, 1)
 	background.sunDistortVectorImg = love.graphics.newImage(background.sunDistortVector)
 	for x = 0,107 do -- TODO: magic number
