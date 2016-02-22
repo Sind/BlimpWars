@@ -1,6 +1,8 @@
 require "strict"
 require "class"
 require "util"
+require "resourcemanager"
+
 require "blimp"
 require "bullet"
 require "playermanager"
@@ -60,6 +62,12 @@ function love.load(args)
 	lastIdleReset = love.timer.getTime()
 	lastInputReceivedTimestamp = love.timer.getTime() - 1
 
+	mainCanvas = love.graphics.newCanvas(192, 108)
+	mainCanvas:setWrap("clamp","clamp")
+
+	-- load the background. Note that modes do not draw or update the background themselves.
+	background.load(192, 108)
+
 	-- Most of the love.load is factored into the initialize()
 	-- function, so that we can call initialize() to restart
 	-- the game, but not have love flicker the window.
@@ -69,9 +77,6 @@ end
 function initialize()
 	-- everything will be rendered to this canvas, which is then rendered upscaled to the screen.
 	connectedInputs = {}
-
-	mainCanvas = love.graphics.newCanvas(192, 108)
-	mainCanvas:setWrap("clamp","clamp")
 
 	-- TODO: check what happens with #connectedInputs < 4
 	local joysticks = love.joystick.getJoysticks()
@@ -94,8 +99,6 @@ function initialize()
 	-- TODO: should playermanager know about joysticks? probably not!
 	playermanager.initializePositions(192, 108, connectedInputs)
 
-	-- load the background. Note that modes do not draw or update the background themselves.
-	background.load(192, 108)
 	-- initialize the gamemodes
 	introscreen.load()
 	game.load()
@@ -109,19 +112,19 @@ function initialize()
 	if not currentMode then currentMode = "introscreen" end
 
 	collectgarbage("collect")
+	if LOG_LUA_HEAP_SIZE then
+		local count = collectgarbage("count")
+		memLogFile:write(tostring(count) .. "\n")
+		memLogFile:flush()
+	end
 end
 
 framecount = 0
 function love.update(dt)
 	framecount = framecount + 1
 
-	if framecount % 100 == 0 then
+	if framecount % 50 == 0 then
 		love.keypressed("return")
-		if LOG_LUA_HEAP_SIZE and framecount % 100 then
-			local count = collectgarbage("count")
-			memLogFile:write(tostring(count) .. "\n")
-			memLogFile:flush()
-		end
 	end
 
 	if framecount % 300 == 0 then

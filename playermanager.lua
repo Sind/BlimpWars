@@ -14,7 +14,7 @@ playermanager.statePositions = nil;
 -- player data
 playermanager.players = nil;
 -- down-pointing green arrow
-playermanager.arrow = love.graphics.newImage("arrow.png")
+playermanager.arrow = resourcemanager.loadImage("arrow.png")
 
 function playermanager.initializePositions(windowWidth, windowHeight, inputs)
 	local maxWidth = windowWidth*0.8

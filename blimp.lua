@@ -5,7 +5,7 @@ function blimp.load()
 	local cannonImageData = love.image.newImageData(10, 2)
 	-- wtf is this even doing, kek
 	for i = 0,9 do for j = 0,1 do cannonImageData:setPixel(i,j,128,128,128) end end
-	blimp.cannonImage = love.graphics.newImage(cannonImageData)
+	blimp.cannonImage = resourcemanager.loadImage(cannonImageData)
 end
 
 function blimp.draw(pos, cannonRotation, mainColor, active)

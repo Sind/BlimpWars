@@ -8,7 +8,7 @@ function background.load(renderWidth, renderHeight)
 	background.vignetteCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas = love.graphics.newCanvas(renderWidth, renderHeight)
 	background.backgroundCanvas:setWrap("clamp","clamp")
-	background.distortShader = love.graphics.newShader("perlin-wave-shader.fsh")
+	background.distortShader = resourcemanager.loadShader("perlin-wave-shader.fsh")
 	background.distortShader:send("waterColor", colors.WATER_COLOR)
 	background.drawOnce()
 end

@@ -14,9 +14,10 @@ function introscreen.load()
 	introscreen.isTransitioning = false
 	introscreen.bannerOffset = 0
 	introscreen.notificationAnimation = nil
-	introscreen.logo = love.graphics.newImage("blimpwars-logo.png")
-	introscreen.buttontext = love.graphics.newImage("join-start-text.png")
-	introscreen.notificationImage = love.graphics.newImage("need-more-players.png")
+
+	introscreen.logo = resourcemanager.loadImage("blimpwars-logo.png")
+	introscreen.buttontext = resourcemanager.loadImage("join-start-text.png")
+	introscreen.notificationImage = resourcemanager.loadImage("need-more-players.png")
 	introscreen.notificationOffset = -10
 
 	if roundStates.actives then

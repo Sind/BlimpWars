@@ -22,7 +22,7 @@ function game.load()
 	game.gameOverTimeout = 0
 	game.winnerTextOffset = -10
 	game.winner = nil
-	game.playAgainImage = love.graphics.newImage("restart.png")
+	game.playAgainImage = resourcemanager.loadImage("restart.png")
 	collectgarbage()
 end
 
@@ -73,7 +73,7 @@ function game._determineWinner()
 			winner = i
 		end
 	end
-	game.winner = love.graphics.newImage(winnerImages[winner])
+	game.winner = resourcemanager.loadImage(winnerImages[winner])
 end
 
 function game.draw()
