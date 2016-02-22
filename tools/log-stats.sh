@@ -1,6 +1,8 @@
 #!/bin/bash
 PROCESS_ID=$(pgrep love)
 
+echo "Attached to PID $PID."
+
 ps v -$PROCESS_ID > stats.log
 while true
 do

@@ -16,6 +16,8 @@ vec2 = require "vector"
 
 ADD_AI_OPPONENTS = true -- when set to true, the game will be filled up with AI opponents.
 IDLE_TIMEOUT_SECONDS = 45
+LOG_LUA_HEAP_SIZE = true -- log the heap size reported by collectgarbage("count") periodically
+AUTOPLAY = true 
 
 -- TODO: mode transitions should really be managed by some sort of
 -- TODO: state-manager so that we can have automatic mode:onEnter(),
@@ -38,6 +40,11 @@ roundStates = {}
 
 lastInputReceivedTimestamp = -2
 lastIdleReset = -1
+
+if LOG_LUA_HEAP_SIZE then
+   io = require("io")
+   memLogFile = io.open("memory.log", "a")
+end
 
 function love.load(args)
 	love.mouse.setVisible(false) -- TODO: try calling this outside love.load as well, to get it in as early as possible
@@ -101,12 +108,22 @@ function initialize()
 	-- mode the game boots into by default, overridden by commandline
 	if not currentMode then currentMode = "introscreen" end
 
-	collectgarbage()
+	collectgarbage("collect")
 end
 
 framecount = 0
 function love.update(dt)
 	framecount = framecount + 1
+
+	if framecount % 100 == 0 then
+		love.keypressed("return")
+		if LOG_LUA_HEAP_SIZE and framecount % 100 then
+			local count = collectgarbage("count")
+			memLogFile:write(tostring(count) .. "\n")
+			memLogFile:flush()
+		end
+	end
+
 	if framecount % 300 == 0 then
 		print("FPS: " .. tostring(love.timer.getFPS()))
 	end
