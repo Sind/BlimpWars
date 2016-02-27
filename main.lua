@@ -19,7 +19,8 @@ vec2 = require "vector"
 ADD_AI_OPPONENTS = true -- when set to true, the game will be filled up with AI opponents.
 IDLE_TIMEOUT_SECONDS = 45
 LOG_LUA_HEAP_SIZE = true -- log the heap size reported by collectgarbage("count") periodically
-AUTOPLAY = true 
+AUTOPLAY = true
+RESTART_AFTER = 300
 
 -- TODO: mode transitions should really be managed by some sort of
 -- TODO: state-manager so that we can have automatic mode:onEnter(),
@@ -38,7 +39,9 @@ connectedInputs = {}
 -- NOTE: This variable should not be reset by initialize(), since we're interested
 -- NOTE: in preserving its value across game resets. It should explicitly be reset on
 -- NOTE: idle-resets and perhaps after a certain number of rounds.
-roundStates = {}
+roundStates = {
+	gamesPlayed = 0
+}
 
 lastInputReceivedTimestamp = -2
 lastIdleReset = -1
@@ -75,13 +78,18 @@ function love.load(args)
 end
 
 function initialize()
+	roundStates.gamesPlayed = roundStates.gamesPlayed + 1
+	if roundStates.gamesPlayed > 200 then
+		print("200 games passed, restarting...")
+		love.event.push("quit")
+	end
+
 	-- everything will be rendered to this canvas, which is then rendered upscaled to the screen.
 	connectedInputs = {}
 
 	-- TODO: check what happens with #connectedInputs < 4
 	local joysticks = love.joystick.getJoysticks()
 	for i = 1, math.min(#joysticks, 4) do
-		print("Inserted player")
 		table.insert(connectedInputs, inputGamepad:new(joysticks[i]))
 	end
 	if ADD_AI_OPPONENTS then
@@ -127,7 +135,7 @@ function love.update(dt)
 		love.keypressed("return")
 	end
 
-	if framecount % 300 == 0 then
+	if framecount % RESTART_AFTER == 0 then
 		print("FPS: " .. tostring(love.timer.getFPS()))
 	end
 	background.update(dt)

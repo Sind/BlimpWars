@@ -3,7 +3,6 @@ player = class()
 BULLET_FORCE = 100
 
 function player:init(pos, input, angle, color)
-	print("player made: " .. pos.x .. " " .. pos.y)
 	self.pos = pos
 	self.input = input
 	self.cannon = angle
