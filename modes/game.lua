@@ -69,7 +69,7 @@ function game._determineWinner()
 	local winner = 5
 	local winnerImages = {"player-1-wins.png", "player-2-wins.png", "player-3-wins.png", "player-4-wins.png", "draw.png"}
 	for i, p in ipairs(playermanager.players) do
-		if not p.dead then
+		if (not p.dead) and p.active then
 			winner = i
 		end
 	end
