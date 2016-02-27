@@ -1,0 +1,13 @@
+[Unit]
+Description=BlimpWars game
+After=basic.target
+#Requires=postgresql.service
+
+[Service]
+ExecStart=/game/blimpwars
+KillMode=process
+Restart=always
+User=sysop
+
+[Install]
+WantedBy=multi-user.target
