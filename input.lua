@@ -26,7 +26,9 @@ function inputDummy:getFire()
 	return self.firing
 end
 
-function inputDummy:vibrate(boolean) end
+function inputDummy:vibrate(boolean)
+
+end
 
 inputGamepad = class()
 
@@ -64,4 +66,11 @@ function inputGamepad:getFire()
    return self.firing
 end
 
-function inputGamepad:vibrate(boolean) end
+function inputGamepad:vibrate(boolean)
+   if boolean then
+      print("vibrate!")
+      self.joystick:setVibration(0.5, 0.5)
+   else
+      self.joystick:setVibration(0, 0)
+   end
+end
